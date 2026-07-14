@@ -8,8 +8,7 @@
  *   빙의하여 예상 영양성분 + 팩트 폭력 피드백을 제공합니다.
  *
  * 🔑 API 키 설정 방법:
- *   아래 GEMINI_API_KEY 값에 본인의 Gemini API 키를 붙여넣으세요.
- *   발급 주소: AIzaSyDmUMsDz2Tz5a0hBxU-OQZ3wEqB2Vn5Gd8
+ *   아래 GEMINI_CONFIG.API_KEY 에 자신의 Gemini API 키를 넣어주세요.
  * ============================================================
  */
 
