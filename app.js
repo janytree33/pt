@@ -962,7 +962,8 @@ function renderDiaryContent() {
           <div class="nutrient-pills">
             <span class="nutrient-pill">🔥 ${meal.api_data.AMT_NUM1}kcal</span>
             <span class="nutrient-pill">💪 단백질 ${meal.api_data.AMT_NUM3}g</span>
-            <span class="nutrient-pill sugar-pill">🍬 당류 ${meal.api_data.AMT_NUM7}g</span>
+            <span class="nutrient-pill">🧈 지방 ${meal.api_data.AMT_NUM4}g</span>
+            <span class="nutrient-pill sugar-pill">🦴 당류 ${meal.api_data.AMT_NUM7}g</span>
           </div>
           <div style="display:flex;gap:4px;margin-top:6px">
             ${meal.stickers.map(s => `<span title="${s.label}">${s.emoji}</span>`).join('')}
