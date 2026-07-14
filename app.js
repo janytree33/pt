@@ -21,7 +21,8 @@ let appState = {
   diaryViewMode: 'list',        // 'list' | 'grid' - 먹기록 보기 모드
   calendarYear: new Date().getFullYear(),
   calendarMonth: new Date().getMonth(),
-  currentBase64Image: null      // 첨부된 사진 (Base64)
+  currentBase64Image: null,     // 첨부된 사진 (Base64)
+  chatHistory: []               // 클로이와의 대화 내역
 };
 
 // 오늘 날짜를 'YYYY-MM-DD' 형식으로 반환
@@ -40,13 +41,72 @@ document.addEventListener('DOMContentLoaded', function() {
   initSearchTab();     // 검색 탭 초기화
   initDiaryTab();      // 먹기록 탭 초기화
   initStatsTab();      // 통계 탭 초기화
-  initNavigation();    // 탭 네비게이션 초기화
+  initNavigation();    // 하단 네비게이션 초기화
+  initChloeChat();     // 💬 후속 대화 (Chat) 이벤트 초기화
   
   renderHomeTab();     // 홈 탭 화면 그리기
 });
 
 // ============================================================
-// 🏠 탭 네비게이션 초기화
+// 💬 후속 대화 (Chat) 초기화
+// ============================================================
+function initChloeChat() {
+  const chatInput = document.getElementById('chloe-chat-input');
+  const chatSendBtn = document.getElementById('chloe-chat-send-btn');
+  const chatMessagesEl = document.getElementById('chloe-chat-messages');
+
+  if (!chatInput || !chatSendBtn || !chatMessagesEl) return;
+
+  const sendMessage = async () => {
+    const text = chatInput.value.trim();
+    if (!text || !appState.selectedFood) return;
+
+    // 1. 유저 메시지 렌더링
+    chatMessagesEl.insertAdjacentHTML('beforeend', `<div class="chat-bubble user">${text}</div>`);
+    chatInput.value = '';
+    chatSendBtn.disabled = true;
+    chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+
+    // 2. 로딩 애니메이션 렌더링
+    const loadingId = 'loading-' + Date.now();
+    chatMessagesEl.insertAdjacentHTML('beforeend', `
+      <div id="${loadingId}" class="chat-bubble chloe loading">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+    `);
+    chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+
+    // 3. API 호출
+    const profile = ChloeData.getUserProfile();
+    const responseText = await ChloeGemini.askChloeChat(
+      appState.selectedFood,
+      profile.goals,
+      appState.chatHistory,
+      text
+    );
+
+    // 4. 대화 기록 저장
+    appState.chatHistory.push({ role: 'user', text });
+    appState.chatHistory.push({ role: 'model', text: responseText });
+
+    // 5. 로딩 지우고 답변 렌더링
+    const loadingEl = document.getElementById(loadingId);
+    if (loadingEl) loadingEl.remove();
+
+    chatMessagesEl.insertAdjacentHTML('beforeend', `<div class="chat-bubble chloe">${responseText}</div>`);
+    chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+    chatSendBtn.disabled = false;
+    chatInput.focus();
+  };
+
+  chatSendBtn.addEventListener('click', sendMessage);
+  chatInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendMessage();
+  });
+}
+
+// ============================================================
+// 📱 탭 네비게이션 초기화
 // ============================================================
 function initNavigation() {
   // 하단 네비게이션 버튼들을 모두 찾아서
@@ -556,6 +616,19 @@ function renderFeedbackPanel(nutrition, feedback) {
     ).join('');
     msgsEl.className = `feedback-box ${ChloeFeedback.getSeverityClass(feedback.severity)}`;
   }
+
+  // 💬 채팅 내역 초기화 및 첫 메시지 세팅
+  appState.chatHistory = [];
+  const chatMessagesEl = document.getElementById('chloe-chat-messages');
+  if (chatMessagesEl) {
+    chatMessagesEl.innerHTML = `
+      <div class="chat-bubble chloe">
+        무엇이든 물어보세요! 영양소나 대체 음식에 대해 친절하게 알려드릴게요. 💁‍♀️
+      </div>
+    `;
+  }
+  const chatInput = document.getElementById('chloe-chat-input');
+  if (chatInput) chatInput.value = '';
 
   // 패널 보이기
   panel.classList.add('visible');

@@ -263,10 +263,76 @@ function buildMockAIResponse(foodName, goals) {
 }
 
 // ============================================================
-// 📦 외부에서 사용할 수 있도록 내보내기
+// 💬 피드백 후속 대화 (Chat) 처리
+// 음식 정보, 유저 목표, 대화 기록을 포함하여 클로이에게 질문
+// ============================================================
+async function askChloeChat(foodData, goals, history, question) {
+  if (!GEMINI_CONFIG.API_KEY || GEMINI_CONFIG.API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
+    return "API 키가 없어서 답변할 수 없어요! 😅";
+  }
+
+  const url = `${GEMINI_CONFIG.BASE_URL}/${GEMINI_CONFIG.MODEL}:generateContent?key=${GEMINI_CONFIG.API_KEY}`;
+  const goalsText = goalsToKorean(goals);
+  
+  // 시스템(컨텍스트) 프롬프트: 음식 정보와 유저 상태
+  const systemPrompt = `
+너는 유저의 다이어트를 돕는 따뜻하고 전문적인 AI 트레이너 '클로이'야. 친근한 존댓말로 대답해줘.
+현재 유저가 보고 있는 음식 정보:
+- 이름: ${foodData.FOOD_NM_KR}
+- 영양성분(1인분 기준): 칼로리 ${foodData.AMT_NUM1}kcal, 단백질 ${foodData.AMT_NUM3}g, 지방 ${foodData.AMT_NUM4}g, 당류 ${foodData.AMT_NUM7}g, 나트륨 ${foodData.AMT_NUM13}mg
+유저 다이어트 목표: ${goalsText}
+
+유저가 위 음식에 대해 질문을 할 거야. 영양 정보와 다이어트 목표를 고려해서 짧고 명확하게, 친절히 답변해줘. 너무 길지 않게 2~3문장으로 핵심만 말해줘. (출력은 일반 텍스트로 할 것. JSON 아님)
+  `.trim();
+
+  // 대화 기록(히스토리) 구성
+  const contents = [
+    { role: 'user', parts: [{ text: systemPrompt }] },
+    { role: 'model', parts: [{ text: "네, 알겠습니다! 어떤 점이 궁금하신가요?" }] }
+  ];
+
+  // 이전 대화 기록 추가
+  for (const msg of history) {
+    contents.push({
+      role: msg.role === 'user' ? 'user' : 'model',
+      parts: [{ text: msg.text }]
+    });
+  }
+
+  // 현재 질문 추가
+  contents.push({
+    role: 'user',
+    parts: [{ text: question }]
+  });
+
+  const requestBody = { contents };
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
+    });
+
+    if (!response.ok) {
+      throw new Error(`Chat API 오류: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    return rawText || "죄송해요, 답변을 생성하지 못했어요. 😢";
+  } catch (error) {
+    console.error('Chat API 실패:', error);
+    return "오류가 발생해서 지금은 대답하기 어려워요! 잠시 후 다시 시도해 주세요.";
+  }
+}
+
+// ============================================================
+// 📦 외부에서 쓸 수 있게 노출
 // ============================================================
 window.ChloeGemini = {
   callGeminiForFood,
+  askChloeChat,
   goalsToKorean,
-  GEMINI_CONFIG   // API 키 설정 편의를 위해 노출
+  GEMINI_CONFIG   // API 키 수정 등을 위해
 };
