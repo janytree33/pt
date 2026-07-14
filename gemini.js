@@ -61,7 +61,7 @@ function buildChloePrompt(foodName, goals, hasImage = false) {
     (goals.intermittent_fasting && goals.sugar_detox && goals.protein_boost);
 
   const imageInstruction = hasImage 
-    ? "유저가 음식 사진(또는 영양성분표 사진)을 첨부했어. 반드시 첨부된 사진을 눈으로 읽고, 사진에 적힌 제품명과 영양성분(칼로리, 단백질, 지방, 당류, 나트륨 등)을 가장 최우선으로 추출해줘. 사진에 정보가 부족하면 사진 속 음식을 추정해서 분석해."
+    ? `유저가 영양성분표(또는 음식) 사진과 함께 "${foodName}"을 검색했어.\n🚨 [매우 중요] 반드시 첨부된 사진 속 영양성분표 숫자를 그대로 읽어서 JSON에 반영해!! 절대 네 마음대로 일반적인 "${foodName}"의 수치로 추정하지 마! 사진에 '1개(10g)당 58kcal'처럼 적혀있다면 그 숫자를 최우선으로 써야 해.`
     : `유저가 식약처 DB에 없는 음식 "${foodName}"을 검색했어.`;
 
   return `
