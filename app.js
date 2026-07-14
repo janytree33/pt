@@ -1,55 +1,49 @@
-/**
+﻿/**
  * ============================================================
- * app.js - 클로이 앱 메인 로직
+ * app.js - ?대줈????硫붿씤 濡쒖쭅
  * ============================================================
- * 📌 역할: 모든 탭의 UI 이벤트 처리, 화면 전환, 데이터 연결
+ * ?뱦 ??븷: 紐⑤뱺 ??쓽 UI ?대깽??泥섎━, ?붾㈃ ?꾪솚, ?곗씠???곌껐
  * 
- * 이 파일은 data.js, api.js, feedback.js를 모두 조합해서
- * 실제 화면에 보여주는 '총괄 감독' 역할을 합니다.
+ * ???뚯씪? data.js, api.js, feedback.js瑜?紐⑤몢 議고빀?댁꽌
+ * ?ㅼ젣 ?붾㈃??蹂댁뿬二쇰뒗 '珥앷큵 媛먮룆' ??븷???⑸땲??
  * ============================================================
  */
 
 // ============================================================
-// 🌐 전역 상태 (앱 전체에서 공유하는 데이터)
+// ?뙋 ?꾩뿭 ?곹깭 (???꾩껜?먯꽌 怨듭쑀?섎뒗 ?곗씠??
 // ============================================================
 let appState = {
-  currentTab: 'home',           // 현재 활성화된 탭
-  selectedFood: null,           // 검색에서 선택된 음식
-  searchResults: [],            // 검색 결과 목록
-  currentDate: new Date(),      // 캘린더 현재 날짜
-  selectedCalDate: getTodayStr(), // 선택된 날짜
-  diaryViewMode: 'list',        // 'list' | 'grid' - 먹기록 보기 모드
+  currentTab: 'home',           // ?꾩옱 ?쒖꽦?붾맂 ??  selectedFood: null,           // 寃?됱뿉???좏깮???뚯떇
+  searchResults: [],            // 寃??寃곌낵 紐⑸줉
+  currentDate: new Date(),      // 罹섎┛???꾩옱 ?좎쭨
+  selectedCalDate: getTodayStr(), // ?좏깮???좎쭨
+  diaryViewMode: 'list',        // 'list' | 'grid' - 癒밴린濡?蹂닿린 紐⑤뱶
   calendarYear: new Date().getFullYear(),
   calendarMonth: new Date().getMonth(),
-  currentBase64Image: null,     // 첨부된 사진 (Base64)
-  chatHistory: []               // 클로이와의 대화 내역
+  currentBase64Image: null,     // 泥⑤????ъ쭊 (Base64)
+  chatHistory: []               // ?대줈?댁???????댁뿭
 };
 
-// 오늘 날짜를 'YYYY-MM-DD' 형식으로 반환
+// ?ㅻ뒛 ?좎쭨瑜?'YYYY-MM-DD' ?뺤떇?쇰줈 諛섑솚
 function getTodayStr() {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
 }
 
 // ============================================================
-// ✅ 앱 초기화 (페이지가 로드되면 가장 먼저 실행)
+// ????珥덇린??(?섏씠吏媛 濡쒕뱶?섎㈃ 媛??癒쇱? ?ㅽ뻾)
 // ============================================================
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('🏋️ 클로이 트레이너 앱 시작!');
+  console.log('?룍截??대줈???몃젅?대꼫 ???쒖옉!');
   
-  initGoalToggles();   // 목표 토글 초기화
-  initSearchTab();     // 검색 탭 초기화
-  initDiaryTab();      // 먹기록 탭 초기화
-  initStatsTab();      // 통계 탭 초기화
-  initNavigation();    // 하단 네비게이션 초기화
-  initChloeChat();     // 💬 후속 대화 (Chat) 이벤트 초기화
-  
-  renderHomeTab();     // 홈 탭 화면 그리기
-});
+  initGoalToggles();   // 紐⑺몴 ?좉? 珥덇린??  initSearchTab();     // 寃????珥덇린??  initDiaryTab();      // 癒밴린濡???珥덇린??  initStatsTab();      // ?듦퀎 ??珥덇린??  initNavigation();    // ?섎떒 ?ㅻ퉬寃뚯씠??珥덇린??  initChloeChat();
+  initAuth();
+  renderFavorites();
+  attachFavoriteButton();     // ?뮠 ?꾩냽 ???(Chat) ?대깽??珥덇린??  
+  renderHomeTab();     // ?????붾㈃ 洹몃━湲?});
 
 // ============================================================
-// 💬 후속 대화 (Chat) 초기화
-// ============================================================
+// ?뮠 ?꾩냽 ???(Chat) 珥덇린??// ============================================================
 function initChloeChat() {
   const chatInput = document.getElementById('chloe-chat-input');
   const chatSendBtn = document.getElementById('chloe-chat-send-btn');
@@ -61,14 +55,12 @@ function initChloeChat() {
     const text = chatInput.value.trim();
     if (!text || !appState.selectedFood) return;
 
-    // 1. 유저 메시지 렌더링
-    chatMessagesEl.insertAdjacentHTML('beforeend', `<div class="chat-bubble user">${text}</div>`);
+    // 1. ?좎? 硫붿떆吏 ?뚮뜑留?    chatMessagesEl.insertAdjacentHTML('beforeend', `<div class="chat-bubble user">${text}</div>`);
     chatInput.value = '';
     chatSendBtn.disabled = true;
     chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
 
-    // 2. 로딩 애니메이션 렌더링
-    const loadingId = 'loading-' + Date.now();
+    // 2. 濡쒕뵫 ?좊땲硫붿씠???뚮뜑留?    const loadingId = 'loading-' + Date.now();
     chatMessagesEl.insertAdjacentHTML('beforeend', `
       <div id="${loadingId}" class="chat-bubble chloe loading">
         <div class="dot"></div><div class="dot"></div><div class="dot"></div>
@@ -76,7 +68,7 @@ function initChloeChat() {
     `);
     chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
 
-    // 3. API 호출
+    // 3. API ?몄텧
     const profile = ChloeData.getUserProfile();
     const responseText = await ChloeGemini.askChloeChat(
       appState.selectedFood,
@@ -85,12 +77,10 @@ function initChloeChat() {
       text
     );
 
-    // 4. 대화 기록 저장
-    appState.chatHistory.push({ role: 'user', text });
+    // 4. ???湲곕줉 ???    appState.chatHistory.push({ role: 'user', text });
     appState.chatHistory.push({ role: 'model', text: responseText });
 
-    // 5. 로딩 지우고 답변 렌더링
-    const loadingEl = document.getElementById(loadingId);
+    // 5. 濡쒕뵫 吏?곌퀬 ?듬? ?뚮뜑留?    const loadingEl = document.getElementById(loadingId);
     if (loadingEl) loadingEl.remove();
 
     chatMessagesEl.insertAdjacentHTML('beforeend', `<div class="chat-bubble chloe">${responseText}</div>`);
@@ -106,15 +96,93 @@ function initChloeChat() {
 }
 
 // ============================================================
-// 📱 탭 네비게이션 초기화
+// ?벑 ???ㅻ퉬寃뚯씠??珥덇린??// ============================================================
+
 // ============================================================
+// 🔐 Auth & Favorites Logic
+// ============================================================
+async function initAuth() {
+  const modal = document.getElementById('login-modal');
+  const emailInput = document.getElementById('login-email');
+  const pwdInput = document.getElementById('login-password');
+  const btnLogin = document.getElementById('btn-login');
+  const btnSignup = document.getElementById('btn-signup');
+
+  // Check session
+  const { session } = await ChloeDB.getSession();
+  if (session) {
+    modal.style.display = 'none';
+    const success = await ChloeData.syncFromSupabase(session.user.id);
+    if(success) {
+      renderHomeTab();
+      renderFavorites();
+    }
+  } else {
+    modal.style.display = 'flex';
+  }
+
+  btnLogin.addEventListener('click', async () => {
+    const email = emailInput.value.trim();
+    const pwd = pwdInput.value.trim();
+    if(!email || !pwd) return alert('이메일과 비밀번호를 입력해주세요.');
+    const { data, error } = await ChloeDB.login(email, pwd);
+    if(error) return alert('로그인 실패: ' + error.message);
+    
+    await ChloeData.syncFromSupabase(data.user.id);
+    modal.style.display = 'none';
+    location.reload();
+  });
+
+  btnSignup.addEventListener('click', async () => {
+    const email = emailInput.value.trim();
+    const pwd = pwdInput.value.trim();
+    if(!email || pwd.length < 6) return alert('이메일과 6자리 이상 비밀번호를 입력해주세요.');
+    const { data, error } = await ChloeDB.signUp(email, pwd);
+    if(error) return alert('가입 실패: ' + error.message);
+    alert('가입 성공! 로그인해주세요.');
+  });
+}
+
+function renderFavorites() {
+  const favList = document.getElementById('favorites-list');
+  if(!favList) return;
+  const favs = ChloeData.getFavorites();
+  favList.innerHTML = favs.length ? '' : '<span style="font-size:12px;color:var(--gray-500)">아직 즐겨찾기가 없습니다.</span>';
+  
+  favs.forEach(f => {
+    const btn = document.createElement('button');
+    btn.className = 'tag-btn';
+    btn.innerHTML = ⭐  + f.FOOD_NM_KR;
+    btn.onclick = () => {
+      appState.selectedFood = f;
+      renderFeedbackPanel(f, {severity:0, messages:['즐겨찾기에서 불러왔습니다!']});
+    };
+    favList.appendChild(btn);
+  });
+}
+
+// Add Add-to-favorites button to feedback panel dynamically
+function attachFavoriteButton() {
+  const btn = document.getElementById('btn-add-favorite');
+  if(btn) {
+    btn.onclick = () => {
+      if(!appState.selectedFood) return;
+      const res = ChloeData.saveFavorite(appState.selectedFood);
+      if(res.success) {
+        alert('⭐ 즐겨찾기에 추가되었습니다!');
+        renderFavorites();
+      } else {
+        alert(res.error || '추가 실패');
+      }
+    };
+  }
+}
 function initNavigation() {
-  // 하단 네비게이션 버튼들을 모두 찾아서
-  const navItems = document.querySelectorAll('.nav-item');
+  // ?섎떒 ?ㅻ퉬寃뚯씠??踰꾪듉?ㅼ쓣 紐⑤몢 李얠븘??  const navItems = document.querySelectorAll('.nav-item');
   
   navItems.forEach(item => {
     item.addEventListener('click', function() {
-      // 클릭된 탭 이름 가져오기 (data-tab 속성)
+      // ?대┃?????대쫫 媛?몄삤湲?(data-tab ?띿꽦)
       const targetTab = this.dataset.tab;
       switchTab(targetTab);
     });
@@ -122,29 +190,27 @@ function initNavigation() {
 }
 
 /**
- * 탭 전환 함수
+ * ???꾪솚 ?⑥닔
  * @param {string} tabName - 'home' | 'search' | 'diary' | 'stats'
  */
 function switchTab(tabName) {
   appState.currentTab = tabName;
   
-  // 모든 탭 비활성화
+  // 紐⑤뱺 ??鍮꾪솢?깊솕
   document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   
-  // 선택한 탭 활성화
-  document.getElementById(`tab-${tabName}`)?.classList.add('active');
+  // ?좏깮?????쒖꽦??  document.getElementById(`tab-${tabName}`)?.classList.add('active');
   document.querySelector(`[data-tab="${tabName}"]`)?.classList.add('active');
   
-  // 탭별 데이터 새로고침
+  // ??퀎 ?곗씠???덈줈怨좎묠
   if (tabName === 'home') renderHomeTab();
   if (tabName === 'diary') renderDiaryTab();
   if (tabName === 'stats') renderStatsTab();
 }
 
 // ============================================================
-// 🏠 홈 탭 렌더링
-// ============================================================
+// ?룧 ?????뚮뜑留?// ============================================================
 function renderHomeTab() {
   const profile = ChloeData.getUserProfile();
   renderDailySummary(profile);
@@ -152,7 +218,7 @@ function renderHomeTab() {
 }
 
 /**
- * 오늘의 영양 요약 카드 업데이트
+ * ?ㅻ뒛???곸뼇 ?붿빟 移대뱶 ?낅뜲?댄듃
  */
 function renderDailySummary(profile) {
   const todayStr = getTodayStr();
@@ -161,15 +227,15 @@ function renderDailySummary(profile) {
   
   const targets = profile.nutrition_targets || { calories: 1750, protein: 100, fat: 70, sugar: 25 };
   
-  // 무조건 당류 25g 이상이면 경고 (고객님 요청)
+  // 臾댁“嫄??밸쪟 25g ?댁긽?대㈃ 寃쎄퀬 (怨좉컼???붿껌)
   const sugarDanger = totals.sugar >= 25;
   
-  // 목표치 대비 HTML 생성 함수
+  // 紐⑺몴移??鍮?HTML ?앹꽦 ?⑥닔
   const renderValue = (current, target) => {
     return `${current || 0} <span style="font-size:14px; color:var(--gray-400); font-weight:500;">/ ${target}</span>`;
   };
   
-  // setEl 대신 innerHTML 사용
+  // setEl ???innerHTML ?ъ슜
   const elCalories = document.getElementById('today-calories');
   const elProtein = document.getElementById('today-protein');
   const elFat = document.getElementById('today-fat');
@@ -180,7 +246,7 @@ function renderDailySummary(profile) {
   if (elFat) elFat.innerHTML = renderValue(totals.fat, targets.fat);
   if (elSugar) elSugar.innerHTML = renderValue(totals.sugar, targets.sugar);
   
-  // 당류 초과면 빨간색 강조
+  // ?밸쪟 珥덇낵硫?鍮④컙??媛뺤“
   const sugarEl = document.getElementById('summary-sugar-item');
   if (sugarEl) {
     sugarEl.classList.toggle('danger-value', sugarDanger);
@@ -188,27 +254,26 @@ function renderDailySummary(profile) {
 }
 
 // ============================================================
-// 🎛️ 목표 토글 초기화 및 이벤트
-// ============================================================
+// ?럾截?紐⑺몴 ?좉? 珥덇린??諛??대깽??// ============================================================
 function initGoalToggles() {
   const profile = ChloeData.getUserProfile();
   
-  // 저장된 값으로 토글 초기 상태 설정
+  // ??λ맂 媛믪쑝濡??좉? 珥덇린 ?곹깭 ?ㅼ젙
   setToggle('toggle-fasting', profile.goals.intermittent_fasting);
   setToggle('toggle-sugar', profile.goals.sugar_detox);
   setToggle('toggle-protein', profile.goals.protein_boost);
   
-  // 각 토글에 이벤트 리스너 연결
+  // 媛??좉????대깽??由ъ뒪???곌껐
   addToggleListener('toggle-fasting', 'intermittent_fasting');
   addToggleListener('toggle-sugar', 'sugar_detox');
   addToggleListener('toggle-protein', 'protein_boost');
   
-  // 스파르타 상태 업데이트
+  // ?ㅽ뙆瑜댄? ?곹깭 ?낅뜲?댄듃
   updateSparta(profile);
 }
 
 /**
- * 토글 상태 시각적으로 설정
+ * ?좉? ?곹깭 ?쒓컖?곸쑝濡??ㅼ젙
  */
 function setToggle(id, value) {
   const el = document.getElementById(id);
@@ -216,64 +281,63 @@ function setToggle(id, value) {
 }
 
 /**
- * 토글 이벤트 리스너 추가
+ * ?좉? ?대깽??由ъ뒪??異붽?
  */
 function addToggleListener(id, goalKey) {
   const el = document.getElementById(id);
   if (!el) return;
   
   el.addEventListener('change', function() {
-    // 로컬스토리지 업데이트
+    // 濡쒖뺄?ㅽ넗由ъ? ?낅뜲?댄듃
     ChloeData.updateGoal(goalKey, this.checked);
     
-    // 스파르타 모드 체크
+    // ?ㅽ뙆瑜댄? 紐⑤뱶 泥댄겕
     const profile = ChloeData.getUserProfile();
     updateSparta(profile);
     
-    // 홈 탭 요약 갱신
+    // ?????붿빟 媛깆떊
     renderDailySummary(profile);
     
-    // 토스트 메시지 표시
+    // ?좎뒪??硫붿떆吏 ?쒖떆
     if (this.checked) {
       const names = {
-        'intermittent_fasting': '⏰ 간헐적 단식',
-        'sugar_detox': '🍬 슈가 디톡스',
-        'protein_boost': '💪 득근득근'
+        'intermittent_fasting': '??媛꾪뿉???⑥떇',
+        'sugar_detox': '?뜫 ?덇? ?뷀넚??,
+        'protein_boost': '?뮞 ?앷렐?앷렐'
       };
-      showToast(`${names[goalKey]} 모드 ON!`, 'success');
+      showToast(`${names[goalKey]} 紐⑤뱶 ON!`, 'success');
     }
   });
 }
 
 /**
- * 스파르타 모드 UI 업데이트
+ * ?ㅽ뙆瑜댄? 紐⑤뱶 UI ?낅뜲?댄듃
  */
 function updateSparta(profile) {
   const isSparta = profile.sparta_mode ||
     (profile.goals.intermittent_fasting && profile.goals.sugar_detox && profile.goals.protein_boost);
   
-  // 스파르타 알림 배너 표시/숨김
+  // ?ㅽ뙆瑜댄? ?뚮┝ 諛곕꼫 ?쒖떆/?④?
   const spartaAlert = document.getElementById('sparta-alert');
   if (spartaAlert) spartaAlert.classList.toggle('visible', isSparta);
   
-  // 헤더의 스파르타 배지 표시/숨김
+  // ?ㅻ뜑???ㅽ뙆瑜댄? 諛곗? ?쒖떆/?④?
   const spartaBadge = document.getElementById('sparta-badge');
   if (spartaBadge) spartaBadge.style.display = isSparta ? 'inline-flex' : 'none';
 }
 
 // ============================================================
-// 🔍 검색 탭 초기화
-// ============================================================
+// ?뵇 寃????珥덇린??// ============================================================
 function initSearchTab() {
   const searchInput = document.getElementById('search-input');
   const searchBtn = document.getElementById('search-btn');
   
   if (!searchInput) return;
   
-  // 최근 검색어 불러오기
+  // 理쒓렐 寃?됱뼱 遺덈윭?ㅺ린
   renderRecentSearches();
 
-  // 📷 사진 첨부 이벤트 처리
+  // ?벜 ?ъ쭊 泥⑤? ?대깽??泥섎━
   const imageUpload = document.getElementById('image-upload');
   const imagePreviewContainer = document.getElementById('image-preview-container');
   const imagePreviewImg = document.getElementById('image-preview-img');
@@ -289,7 +353,7 @@ function initSearchTab() {
           if (imagePreviewImg) imagePreviewImg.src = appState.currentBase64Image;
           if (imagePreviewContainer) imagePreviewContainer.style.display = 'flex';
           
-          // 사진이 첨부되었으므로 검색 버튼을 누르도록 유도 (자동 검색 삭제)
+          // ?ъ쭊??泥⑤??섏뿀?쇰?濡?寃??踰꾪듉???꾨Ⅴ?꾨줉 ?좊룄 (?먮룞 寃????젣)
         };
         reader.readAsDataURL(file);
       }
@@ -305,9 +369,8 @@ function initSearchTab() {
     });
   }
 
-  // 📋 클립보드 이미지 붙여넣기(Ctrl+V) 지원
-  document.addEventListener('paste', function(e) {
-    // 탭이 'search'일 때만 동작하도록 제한 (선택 사항이지만 안전함)
+  // ?뱥 ?대┰蹂대뱶 ?대?吏 遺숈뿬?ｊ린(Ctrl+V) 吏??  document.addEventListener('paste', function(e) {
+    // ??씠 'search'???뚮쭔 ?숈옉?섎룄濡??쒗븳 (?좏깮 ?ы빆?댁?留??덉쟾??
     if (document.getElementById('search-tab').style.display === 'none') return;
 
     const items = (e.clipboardData || e.originalEvent.clipboardData).items;
@@ -320,19 +383,19 @@ function initSearchTab() {
           appState.currentBase64Image = event.target.result;
           if (imagePreviewImg) imagePreviewImg.src = appState.currentBase64Image;
           if (imagePreviewContainer) imagePreviewContainer.style.display = 'flex';
-          showToast('✅ 이미지가 클립보드에서 첨부되었습니다.', 'success');
+          showToast('???대?吏媛 ?대┰蹂대뱶?먯꽌 泥⑤??섏뿀?듬땲??', 'success');
         };
         reader.readAsDataURL(file);
-        break; // 첫 번째 이미지만 처리
+        break; // 泥?踰덉㎏ ?대?吏留?泥섎━
       }
     }
   });
 
-  // ───────────────────────────────────────────────────────
-  // ⌕ 타이핑 자동완성 (isExplicit = false)
-  // 　문자 입력 시마다 500ms 디바운스로 API 호출
-  // 　⚠️ 이 경로는 검색어 저장 안 함! (히스토리 중복 저장 방지)
-  // ───────────────────────────────────────────────────────
+  // ???????????????????????????????????????????????????????
+  // ????댄븨 ?먮룞?꾩꽦 (isExplicit = false)
+  // ?臾몄옄 ?낅젰 ?쒕쭏??500ms ?붾컮?댁뒪濡?API ?몄텧
+  // ??좑툘 ??寃쎈줈??寃?됱뼱 ??????? (?덉뒪?좊━ 以묐났 ???諛⑹?)
+  // ???????????????????????????????????????????????????????
   let debounceTimer;
   searchInput.addEventListener('input', function() {
     clearTimeout(debounceTimer);
@@ -343,23 +406,23 @@ function initSearchTab() {
       return;
     }
 
-    // 디바운스: 500ms 이후 자동완성 전용 검색 (isExplicit = false → 히스토리 미저장)
+    // ?붾컮?댁뒪: 500ms ?댄썑 ?먮룞?꾩꽦 ?꾩슜 寃??(isExplicit = false ???덉뒪?좊━ 誘몄???
     debounceTimer = setTimeout(() => {
       performSearch(query, false);
     }, 500);
   });
 
-  // ───────────────────────────────────────────────────────
-  // ⏎ 명시적 검색 (isExplicit = true)
-  // 　엔터키 또는 검색 버튼 클릭 시에만 히스토리에 저장—이게 점리!
-  // ───────────────────────────────────────────────────────
+  // ???????????????????????????????????????????????????????
+  // ??紐낆떆??寃??(isExplicit = true)
+  // ??뷀꽣???먮뒗 寃??踰꾪듉 ?대┃ ?쒖뿉留??덉뒪?좊━????β붿씠寃??먮━!
+  // ???????????????????????????????????????????????????????
   searchBtn?.addEventListener('click', () => {
     const query = searchInput.value.trim();
     const hasImage = !!appState.currentBase64Image;
     if (!query && !hasImage) return;
     
-    clearTimeout(debounceTimer); // 디바운스 취소 (중복 호출 방지)
-    performSearch(query, true);  // 명시적 검색 → 히스토리 저장 O
+    clearTimeout(debounceTimer); // ?붾컮?댁뒪 痍⑥냼 (以묐났 ?몄텧 諛⑹?)
+    performSearch(query, true);  // 紐낆떆??寃?????덉뒪?좊━ ???O
   });
 
   searchInput.addEventListener('keypress', (e) => {
@@ -368,12 +431,12 @@ function initSearchTab() {
       const hasImage = !!appState.currentBase64Image;
       if (!query && !hasImage) return;
       
-      clearTimeout(debounceTimer); // 디바운스 취소
-      performSearch(query, true);  // 명시적 검색 → 히스토리 저장 O
+      clearTimeout(debounceTimer); // ?붾컮?댁뒪 痍⑥냼
+      performSearch(query, true);  // 紐낆떆??寃?????덉뒪?좊━ ???O
     }
   });
 
-  // 검색창 바깥 클릭 시 자동완성 닫기
+  // 寃?됱갹 諛붽묑 ?대┃ ???먮룞?꾩꽦 ?リ린
   document.addEventListener('click', function(e) {
     if (!document.getElementById('search-wrapper')?.contains(e.target)) {
       hideAutocomplete();
@@ -382,37 +445,36 @@ function initSearchTab() {
 }
 
 /**
- * 식약처 API 검색 실행 + Gemini AI 폴백 분기
+ * ?앹빟泥?API 寃???ㅽ뻾 + Gemini AI ?대갚 遺꾧린
  *
- * @param {string}  query      - 검색어
- * @param {boolean} isExplicit - true: 엔터/버튼 오의 명시적 검색 (히스토리 저장 O)
- *                               false: 타이핑 디바운스 자동 검색 (히스토리 저장 X)
+ * @param {string}  query      - 寃?됱뼱
+ * @param {boolean} isExplicit - true: ?뷀꽣/踰꾪듉 ?ㅼ쓽 紐낆떆??寃??(?덉뒪?좊━ ???O)
+ *                               false: ??댄븨 ?붾컮?댁뒪 ?먮룞 寃??(?덉뒪?좊━ ???X)
  *
- * ⚠️ 버그 수정 이력 (2026-07-14):
- *   기존: isExplicit 구분 없이 디바운스 발동 시에도 AI 폴백이 히스토리 저장 → 중간 타이핑값 누적
- *   수정: isExplicit=true일 때만 히스토리 저장
- */
+ * ?좑툘 踰꾧렇 ?섏젙 ?대젰 (2026-07-14):
+ *   湲곗〈: isExplicit 援щ텇 ?놁씠 ?붾컮?댁뒪 諛쒕룞 ?쒖뿉??AI ?대갚???덉뒪?좊━ ?????以묎컙 ??댄븨媛??꾩쟻
+ *   ?섏젙: isExplicit=true???뚮쭔 ?덉뒪?좊━ ??? */
 async function performSearch(query, isExplicit = false) {
   const hasImage = !!appState.currentBase64Image;
 
   if (!query && !hasImage) return;
 
-  // ── 1단계: 식약처 공공 API 호출 ──────────────────────────
-  showLoading(true, hasImage ? '📷 사진의 영양 성분을 분석 중입니다...' : '공공 데이터베이스 검색 중...');
+  // ?? 1?④퀎: ?앹빟泥?怨듦났 API ?몄텧 ??????????????????????????
+  showLoading(true, hasImage ? '?벜 ?ъ쭊???곸뼇 ?깅텇??遺꾩꽍 以묒엯?덈떎...' : '怨듦났 ?곗씠?곕쿋?댁뒪 寃??以?..');
   hideAutocomplete();
 
   let publicResults = [];
   
-  // 이미지가 첨부되었다면 공공 DB는 무시하고 무조건 AI 분석으로 직행
+  // ?대?吏媛 泥⑤??섏뿀?ㅻ㈃ 怨듦났 DB??臾댁떆?섍퀬 臾댁“嫄?AI 遺꾩꽍?쇰줈 吏곹뻾
   if (!hasImage) {
     try {
       const rawResults = await ChloeAPI.searchFood(query);
       publicResults = rawResults.map(ChloeAPI.normalizeNutrition);
     } catch (e) {
-      console.warn('공공 API 오류, AI 폴백으로 전환:', e.message);
+      console.warn('怨듦났 API ?ㅻ쪟, AI ?대갚?쇰줈 ?꾪솚:', e.message);
     }
 
-    // ── 2단계: 공공 API 결과가 있으면 자동완성 표시 후 종료 ──
+    // ?? 2?④퀎: 怨듦났 API 寃곌낵媛 ?덉쑝硫??먮룞?꾩꽦 ?쒖떆 ??醫낅즺 ??
     if (publicResults.length > 0) {
       renderAutocomplete(publicResults);
       showLoading(false);
@@ -420,30 +482,29 @@ async function performSearch(query, isExplicit = false) {
     }
   }
 
-  // ── 3단계: 결과 없음 (또는 사진 첨부) → AI 폴백
-  // isExplicit = false(타이핑 중):
-  // 이미지가 있든 없든, 타이핑 중(isExplicit=false)이면 AI 호출을 막습니다. (쿼터 초과 방지)
+  // ?? 3?④퀎: 寃곌낵 ?놁쓬 (?먮뒗 ?ъ쭊 泥⑤?) ??AI ?대갚
+  // isExplicit = false(??댄븨 以?:
+  // ?대?吏媛 ?덈뱺 ?녿뱺, ??댄븨 以?isExplicit=false)?대㈃ AI ?몄텧??留됱뒿?덈떎. (荑쇳꽣 珥덇낵 諛⑹?)
   if (!isExplicit) {
     showLoading(false);
     return;
   }
 
-  // ── 4단계: 명시적 검색일 때만 AI 폴백 실행 ──────────────────
-  showLoading(true, '✨ 클로이가 ' + (hasImage ? '사진을 읽고 ' : '') + '영양 데이터를 추정 중입니다...');
+  // ?? 4?④퀎: 紐낆떆??寃?됱씪 ?뚮쭔 AI ?대갚 ?ㅽ뻾 ??????????????????
+  showLoading(true, '???대줈?닿? ' + (hasImage ? '?ъ쭊???쎄퀬 ' : '') + '?곸뼇 ?곗씠?곕? 異붿젙 以묒엯?덈떎...');
 
   try {
     const profile = ChloeData.getUserProfile();
-    const aiNutrition = await ChloeGemini.callGeminiForFood(query || "이 사진 속 음식", profile.goals, appState.currentBase64Image);
+    const aiNutrition = await ChloeGemini.callGeminiForFood(query || "???ъ쭊 ???뚯떇", profile.goals, appState.currentBase64Image);
 
-    // ✅ 명시적 검색일 때만 히스토리 저장!
+    // ??紐낆떆??寃?됱씪 ?뚮쭔 ?덉뒪?좊━ ???
     if (query) {
       ChloeData.saveSearchHistory(query);
       renderRecentSearches();
       document.getElementById('search-input').value = query;
     }
 
-    // 사진이 있었다면 분석 후 폼 초기화
-    if (hasImage) {
+    // ?ъ쭊???덉뿀?ㅻ㈃ 遺꾩꽍 ????珥덇린??    if (hasImage) {
       appState.currentBase64Image = null;
       const imageUpload = document.getElementById('image-upload');
       const imagePreviewContainer = document.getElementById('image-preview-container');
@@ -455,16 +516,15 @@ async function performSearch(query, isExplicit = false) {
     selectFoodFromAI(aiNutrition);
 
   } catch (aiError) {
-    console.error('❌ AI 폴백도 실패:', aiError.message);
-    showToast(`클로이가 이 음식을 모르겠어요 😅 (이유: ${aiError.message})`, 'error');
+    console.error('??AI ?대갚???ㅽ뙣:', aiError.message);
+    showToast(`?대줈?닿? ???뚯떇??紐⑤Ⅴ寃좎뼱???쁾 (?댁쑀: ${aiError.message})`, 'error');
   } finally {
     showLoading(false);
   }
 }
 
 /**
- * 자동완성 리스트 렌더링
- */
+ * ?먮룞?꾩꽦 由ъ뒪???뚮뜑留? */
 function renderAutocomplete(items) {
   const list = document.getElementById('autocomplete-list');
   if (!list) return;
@@ -475,12 +535,12 @@ function renderAutocomplete(items) {
     const el = document.createElement('div');
     el.className = 'autocomplete-item';
     el.innerHTML = `
-      <span style="font-size:18px">🍽️</span>
+      <span style="font-size:18px">?띂截?/span>
       <span class="food-name">${item.FOOD_NM_KR}</span>
       <span class="food-cal">${item.AMT_NUM1}kcal</span>
     `;
     
-    // 음식 선택 시 피드백 표시
+    // ?뚯떇 ?좏깮 ???쇰뱶諛??쒖떆
     el.addEventListener('click', () => {
       selectFood(item);
       document.getElementById('search-input').value = item.FOOD_NM_KR;
@@ -496,47 +556,44 @@ function renderAutocomplete(items) {
 }
 
 /**
- * 공공 API 결과 선택 → 기존 피드백 패널 표시
+ * 怨듦났 API 寃곌낵 ?좏깮 ??湲곗〈 ?쇰뱶諛??⑤꼸 ?쒖떆
  */
 function selectFood(nutrition) {
   appState.selectedFood = nutrition;
   const profile = ChloeData.getUserProfile();
   const feedback = ChloeFeedback.generateFeedback(nutrition, profile.goals);
 
-  // AI 뱃지 숨기기 (공공 데이터는 AI 아니므로)
+  // AI 諭껋? ?④린湲?(怨듦났 ?곗씠?곕뒗 AI ?꾨땲誘濡?
   toggleAIBadge(false);
 
   renderFeedbackPanel(nutrition, feedback);
 
-  // 피드백 패널로 스크롤
-  setTimeout(() => {
+  // ?쇰뱶諛??⑤꼸濡??ㅽ겕濡?  setTimeout(() => {
     document.getElementById('feedback-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 100);
 }
 
 /**
- * AI 폴백 결과 선택 → AI 전용 피드백 패널 표시
- * 공공 API와 동일한 UI 구조를 쓰되, AI 뱃지 + AI 피드백 텍스트 추가
+ * AI ?대갚 寃곌낵 ?좏깮 ??AI ?꾩슜 ?쇰뱶諛??⑤꼸 ?쒖떆
+ * 怨듦났 API? ?숈씪??UI 援ъ“瑜??곕릺, AI 諭껋? + AI ?쇰뱶諛??띿뒪??異붽?
  */
 function selectFoodFromAI(aiNutrition) {
   appState.selectedFood = aiNutrition;
   const profile = ChloeData.getUserProfile();
 
-  // ✨ AI 전용: 기존 피드백 로직 대신 AI가 만든 피드백 텍스트 사용
-  // 단, 스티커 자동 부여는 기존 로직 그대로 활용
+  // ??AI ?꾩슜: 湲곗〈 ?쇰뱶諛?濡쒖쭅 ???AI媛 留뚮뱺 ?쇰뱶諛??띿뒪???ъ슜
+  // ?? ?ㅽ떚而??먮룞 遺?щ뒗 湲곗〈 濡쒖쭅 洹몃?濡??쒖슜
   const feedback = ChloeFeedback.generateFeedback(aiNutrition, profile.goals);
 
-  // AI 뱃지 보이기
-  toggleAIBadge(true);
+  // AI 諭껋? 蹂댁씠湲?  toggleAIBadge(true);
 
-  // 공통 패널 렌더링
-  renderFeedbackPanel(aiNutrition, feedback);
+  // 怨듯넻 ?⑤꼸 ?뚮뜑留?  renderFeedbackPanel(aiNutrition, feedback);
 
-  // AI 피드백 텍스트로 덮어쓰기 (클로이가 직접 쓴 멘트)
+  // AI ?쇰뱶諛??띿뒪?몃줈 ??뼱?곌린 (?대줈?닿? 吏곸젒 ??硫섑듃)
   if (aiNutrition._aiFeedback) {
     const msgsEl = document.getElementById('feedback-messages');
     if (msgsEl) {
-      // 당류 수준에 따라 심각도 색상 결정
+      // ?밸쪟 ?섏????곕씪 ?ш컖???됱긽 寃곗젙
       const sugar = aiNutrition.AMT_NUM7;
       const severityClass = sugar > 25 ? 'feedback-danger'
                           : sugar > 10 ? 'feedback-warning'
@@ -546,37 +603,35 @@ function selectFoodFromAI(aiNutrition) {
       msgsEl.className = `feedback-box ${severityClass}`;
       msgsEl.innerHTML = `
         <div class="feedback-msg msg-${msgType}">
-          <span class="msg-icon">🤖</span>
+          <span class="msg-icon">?쨼</span>
           <span>${aiNutrition._aiFeedback}</span>
         </div>
         <div style="margin-top:8px;font-size:11px;color:var(--gray-400);text-align:right">
-          📐 제공량: ${aiNutrition._servingSize}
+          ?뱪 ?쒓났?? ${aiNutrition._servingSize}
         </div>
       `;
     }
   }
 
-  // 피드백 패널로 스크롤
-  setTimeout(() => {
+  // ?쇰뱶諛??⑤꼸濡??ㅽ겕濡?  setTimeout(() => {
     document.getElementById('feedback-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 100);
 }
 
 /**
- * AI 뱃지 표시/숨김 토글
- * @param {boolean} show - true면 보이기, false면 숨기기
- */
+ * AI 諭껋? ?쒖떆/?④? ?좉?
+ * @param {boolean} show - true硫?蹂댁씠湲? false硫??④린湲? */
 function toggleAIBadge(show) {
   const badge = document.getElementById('ai-analysis-badge');
   if (badge) badge.style.display = show ? 'flex' : 'none';
-  // 영양 데이터 안내 문구도 AI 추정치임을 알림
+  // ?곸뼇 ?곗씠???덈궡 臾멸뎄??AI 異붿젙移섏엫???뚮┝
   const disclaimer = document.getElementById('ai-disclaimer');
   if (disclaimer) disclaimer.style.display = show ? 'block' : 'none';
 }
 
 /**
- * 피드백 패널 렌더링 (영양 정보 + 클로이 코멘트)
- * 공공 API와 AI 폴백 모두 이 함수를 통해 렌더링됨
+ * ?쇰뱶諛??⑤꼸 ?뚮뜑留?(?곸뼇 ?뺣낫 + ?대줈??肄붾찘??
+ * 怨듦났 API? AI ?대갚 紐⑤몢 ???⑥닔瑜??듯빐 ?뚮뜑留곷맖
  */
 function renderFeedbackPanel(nutrition, feedback) {
   const panel = document.getElementById('feedback-panel');
@@ -585,19 +640,19 @@ function renderFeedbackPanel(nutrition, feedback) {
   const sugarCubes = Math.round(nutrition.AMT_NUM7 / 4);
   const mood = ChloeFeedback.getChloeMood(feedback.severity);
 
-  // 영양 정보 업데이트
+  // ?곸뼇 ?뺣낫 ?낅뜲?댄듃
   setEl('nut-calories', nutrition.AMT_NUM1);
   setEl('nut-protein', nutrition.AMT_NUM3);
   setEl('nut-fat', nutrition.AMT_NUM4);
   setEl('nut-sugar', nutrition.AMT_NUM7);
   setEl('nut-sodium', nutrition.AMT_NUM13);
   setEl('food-title', nutrition.FOOD_NM_KR);
-  setEl('sugar-cubes-text', sugarCubes > 0 ? `각설탕 ${sugarCubes}개 분량` : '당류 없음');
+  setEl('sugar-cubes-text', sugarCubes > 0 ? `媛곸꽕??${sugarCubes}媛?遺꾨웾` : '?밸쪟 ?놁쓬');
 
-  // 클로이 기분 이모지 업데이트
+  // ?대줈??湲곕텇 ?대え吏 ?낅뜲?댄듃
   setEl('chloe-mood-emoji', mood);
 
-  // 스티커 렌더링 (AI 폴백도 자동 스티커 부여)
+  // ?ㅽ떚而??뚮뜑留?(AI ?대갚???먮룞 ?ㅽ떚而?遺??
   const stickersEl = document.getElementById('feedback-stickers');
   if (stickersEl) {
     stickersEl.innerHTML = feedback.stickers.map(s =>
@@ -605,7 +660,7 @@ function renderFeedbackPanel(nutrition, feedback) {
     ).join('');
   }
 
-  // 피드백 메시지들 렌더링 (AI 폴백에서는 selectFoodFromAI가 덮어씀)
+  // ?쇰뱶諛?硫붿떆吏???뚮뜑留?(AI ?대갚?먯꽌??selectFoodFromAI媛 ??뼱?)
   const msgsEl = document.getElementById('feedback-messages');
   if (msgsEl) {
     msgsEl.innerHTML = feedback.messages.map(msg =>
@@ -617,26 +672,23 @@ function renderFeedbackPanel(nutrition, feedback) {
     msgsEl.className = `feedback-box ${ChloeFeedback.getSeverityClass(feedback.severity)}`;
   }
 
-  // 💬 채팅 내역 초기화 및 첫 메시지 세팅
+  // ?뮠 梨꾪똿 ?댁뿭 珥덇린??諛?泥?硫붿떆吏 ?명똿
   appState.chatHistory = [];
   const chatMessagesEl = document.getElementById('chloe-chat-messages');
   if (chatMessagesEl) {
     chatMessagesEl.innerHTML = `
       <div class="chat-bubble chloe">
-        무엇이든 물어보세요! 영양소나 대체 음식에 대해 친절하게 알려드릴게요. 💁‍♀️
-      </div>
+        臾댁뾿?대뱺 臾쇱뼱蹂댁꽭?? ?곸뼇?뚮굹 ?泥??뚯떇?????移쒖젅?섍쾶 ?뚮젮?쒕┫寃뚯슂. ?뭲?띯?截?      </div>
     `;
   }
   const chatInput = document.getElementById('chloe-chat-input');
   if (chatInput) chatInput.value = '';
 
-  // 패널 보이기
-  panel.classList.add('visible');
+  // ?⑤꼸 蹂댁씠湲?  panel.classList.add('visible');
 }
 
 /**
- * 최근 검색어 태그 렌더링
- */
+ * 理쒓렐 寃?됱뼱 ?쒓렇 ?뚮뜑留? */
 function renderRecentSearches() {
   const history = ChloeData.getSearchHistory();
   const container = document.getElementById('recent-searches');
@@ -652,15 +704,15 @@ function renderRecentSearches() {
   if (tagsEl) {
     tagsEl.innerHTML = history.map(keyword =>
       `<div style="display:inline-flex; align-items:center; position:relative; margin-right:8px; margin-bottom:8px;">
-         <button class="tag-btn" onclick="quickSearch('${keyword}')" style="padding-right:24px;">🔍 ${keyword}</button>
-         <button onclick="deleteRecentSearch('${keyword}', event)" style="position:absolute; right:6px; background:none; border:none; font-size:12px; color:var(--coral); cursor:pointer; padding:2px; display:flex; align-items:center; justify-content:center;">✕</button>
+         <button class="tag-btn" onclick="quickSearch('${keyword}')" style="padding-right:24px;">?뵇 ${keyword}</button>
+         <button onclick="deleteRecentSearch('${keyword}', event)" style="position:absolute; right:6px; background:none; border:none; font-size:12px; color:var(--coral); cursor:pointer; padding:2px; display:flex; align-items:center; justify-content:center;">??/button>
        </div>`
     ).join('');
   }
 }
 
 /**
- * 최근 검색어 개별 삭제 핸들러 (전역)
+ * 理쒓렐 寃?됱뼱 媛쒕퀎 ??젣 ?몃뱾??(?꾩뿭)
  */
 window.deleteRecentSearch = function(keyword, event) {
   event.stopPropagation();
@@ -669,15 +721,14 @@ window.deleteRecentSearch = function(keyword, event) {
 };
 
 /**
- * 빠른 검색 (최근 검색어 태그 클릭 시)
+ * 鍮좊Ⅸ 寃??(理쒓렐 寃?됱뼱 ?쒓렇 ?대┃ ??
  */
 function quickSearch(keyword) {
   document.getElementById('search-input').value = keyword;
-  performSearch(keyword, true); // 태그 클릭은 명시적 검색
-}
+  performSearch(keyword, true); // ?쒓렇 ?대┃? 紐낆떆??寃??}
 
 /**
- * 기록하기 버튼 클릭 처리
+ * 湲곕줉?섍린 踰꾪듉 ?대┃ 泥섎━
  */
 function saveCurrentMeal() {
   if (!appState.selectedFood) return;
@@ -685,14 +736,13 @@ function saveCurrentMeal() {
   const profile = ChloeData.getUserProfile();
   const feedback = ChloeFeedback.generateFeedback(appState.selectedFood, profile.goals);
   
-  // 사진 데이터 가져오기
-  const photoInput = document.getElementById('photo-input');
+  // ?ъ쭊 ?곗씠??媛?몄삤湲?  const photoInput = document.getElementById('photo-input');
   const photoPreview = document.getElementById('photo-preview');
   const memoInput = document.getElementById('meal-memo');
-  const mealTypeSelect = document.getElementById('meal-type-select'); // 식사 종류 추가
-  const quantityInput = document.getElementById('meal-quantity'); // ⚖️ 수량(배수)
+  const mealTypeSelect = document.getElementById('meal-type-select'); // ?앹궗 醫낅쪟 異붽?
+  const quantityInput = document.getElementById('meal-quantity'); // ?뽳툘 ?섎웾(諛곗닔)
   
-  // 수량 계산
+  // ?섎웾 怨꾩궛
   const qty = quantityInput ? parseFloat(quantityInput.value) || 1 : 1;
   const scaledFood = { ...appState.selectedFood };
   
@@ -707,7 +757,7 @@ function saveCurrentMeal() {
   
   const mealData = {
     ...scaledFood,
-    meal_type: mealTypeSelect ? mealTypeSelect.value : '식사',
+    meal_type: mealTypeSelect ? mealTypeSelect.value : '?앹궗',
     photo_base64: (photoPreview?.src && photoPreview.src !== window.location.href) 
       ? photoPreview.src 
       : null,
@@ -721,10 +771,9 @@ function saveCurrentMeal() {
   );
   
   if (result.success) {
-    showToast('🎉 먹기록 저장 완료!', 'success');
+    showToast('?럦 癒밴린濡?????꾨즺!', 'success');
     
-    // 입력 초기화
-    appState.selectedFood = null;
+    // ?낅젰 珥덇린??    appState.selectedFood = null;
     document.getElementById('search-input').value = '';
     document.getElementById('feedback-panel')?.classList.remove('visible');
     if (memoInput) memoInput.value = '';
@@ -735,18 +784,17 @@ function saveCurrentMeal() {
     const placeholder = document.querySelector('.photo-placeholder');
     if (placeholder) placeholder.style.display = 'flex';
     
-    // 통계 탭 갱신
+    // ?듦퀎 ??媛깆떊
     renderHomeTab();
   } else {
-    showToast('저장에 실패했어요. 다시 시도해주세요.', 'error');
+    showToast('??μ뿉 ?ㅽ뙣?덉뼱?? ?ㅼ떆 ?쒕룄?댁＜?몄슂.', 'error');
   }
 }
 
 // ============================================================
-// 📖 먹기록 탭 초기화 및 렌더링
-// ============================================================
+// ?뱰 癒밴린濡???珥덇린??諛??뚮뜑留?// ============================================================
 function initDiaryTab() {
-  // 보기 모드 토글 버튼
+  // 蹂닿린 紐⑤뱶 ?좉? 踰꾪듉
   document.getElementById('view-list-btn')?.addEventListener('click', () => {
     appState.diaryViewMode = 'list';
     updateDiaryViewBtns();
@@ -759,7 +807,7 @@ function initDiaryTab() {
     renderDiaryContent();
   });
   
-  // 캘린더 이전/다음 달 버튼
+  // 罹섎┛???댁쟾/?ㅼ쓬 ??踰꾪듉
   document.getElementById('cal-prev')?.addEventListener('click', () => {
     appState.calendarMonth--;
     if (appState.calendarMonth < 0) {
@@ -780,11 +828,10 @@ function initDiaryTab() {
   
   renderCalendar();
   renderDiaryContent();
-  initDiaryDragAndDrop(); // 드래그 앤 드롭 초기화
-}
+  initDiaryDragAndDrop(); // ?쒕옒洹????쒕∼ 珥덇린??}
 
 /**
- * 다이어리 드래그 앤 드롭 이벤트 설정
+ * ?ㅼ씠?대━ ?쒕옒洹????쒕∼ ?대깽???ㅼ젙
  */
 function initDiaryDragAndDrop() {
   const container = document.getElementById('diary-content');
@@ -802,12 +849,12 @@ function initDiaryDragAndDrop() {
   });
 
   container.addEventListener('dragover', function(e) {
-    e.preventDefault(); // 드롭 허용
+    e.preventDefault(); // ?쒕∼ ?덉슜
     e.dataTransfer.dropEffect = 'move';
     const targetItem = e.target.closest('.diary-list-item, .diary-card');
     if (targetItem && targetItem !== draggedItem) {
       const rect = targetItem.getBoundingClientRect();
-      // 세로 방향 (목록 뷰)
+      // ?몃줈 諛⑺뼢 (紐⑸줉 酉?
       if (appState.diaryViewMode === 'list') {
         const offset = e.clientY - rect.top;
         if (offset > rect.height / 2) {
@@ -816,7 +863,7 @@ function initDiaryDragAndDrop() {
           targetItem.parentNode.insertBefore(draggedItem, targetItem);
         }
       } 
-      // 가로 방향 (그리드 뷰)
+      // 媛濡?諛⑺뼢 (洹몃━??酉?
       else {
         const offset = e.clientX - rect.left;
         if (offset > rect.width / 2) {
@@ -833,13 +880,13 @@ function initDiaryDragAndDrop() {
       draggedItem.style.opacity = '1';
       draggedItem = null;
       
-      // 새 순서 추출
+      // ???쒖꽌 異붿텧
       const items = container.querySelectorAll('.diary-list-item, .diary-card');
       const newOrderIds = Array.from(items).map(el => el.getAttribute('data-id')).filter(Boolean);
       
       if (newOrderIds.length > 0) {
         ChloeData.updateMealOrder(appState.selectedCalDate, newOrderIds);
-        showToast('식단 순서가 변경되었습니다.', 'success');
+        showToast('?앸떒 ?쒖꽌媛 蹂寃쎈릺?덉뒿?덈떎.', 'success');
       }
     }
   });
@@ -856,12 +903,11 @@ function updateDiaryViewBtns() {
 }
 
 /**
- * 미니 캘린더 렌더링
- */
+ * 誘몃땲 罹섎┛???뚮뜑留? */
 function renderCalendar() {
-  const monthNames = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  const monthNames = ['1??,'2??,'3??,'4??,'5??,'6??,'7??,'8??,'9??,'10??,'11??,'12??];
   const monthEl = document.getElementById('cal-month');
-  if (monthEl) monthEl.textContent = `${appState.calendarYear}년 ${monthNames[appState.calendarMonth]}`;
+  if (monthEl) monthEl.textContent = `${appState.calendarYear}??${monthNames[appState.calendarMonth]}`;
   
   const grid = document.getElementById('calendar-days');
   if (!grid) return;
@@ -869,21 +915,20 @@ function renderCalendar() {
   const diaryEntries = ChloeData.getDiaryEntries();
   const recordDates = new Set(diaryEntries.map(e => e.date));
   
-  // 1일이 무슨 요일인지 계산
+  // 1?쇱씠 臾댁뒯 ?붿씪?몄? 怨꾩궛
   const firstDay = new Date(appState.calendarYear, appState.calendarMonth, 1).getDay();
-  // 이번 달 마지막 날짜
+  // ?대쾲 ??留덉?留??좎쭨
   const lastDate = new Date(appState.calendarYear, appState.calendarMonth + 1, 0).getDate();
   
   const todayStr = getTodayStr();
   grid.innerHTML = '';
   
-  // 앞쪽 빈 칸 채우기 (1일 전까지)
+  // ?욎そ 鍮?移?梨꾩슦湲?(1???꾧퉴吏)
   for (let i = 0; i < firstDay; i++) {
     grid.innerHTML += '<div></div>';
   }
   
-  // 날짜 채우기
-  for (let d = 1; d <= lastDate; d++) {
+  // ?좎쭨 梨꾩슦湲?  for (let d = 1; d <= lastDate; d++) {
     const dateStr = `${appState.calendarYear}-${String(appState.calendarMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const isToday = dateStr === todayStr;
     const hasRecord = recordDates.has(dateStr);
@@ -902,7 +947,7 @@ function renderCalendar() {
 }
 
 /**
- * 선택된 날짜의 식단 목록 렌더링 (리스트 or 그리드 모드)
+ * ?좏깮???좎쭨???앸떒 紐⑸줉 ?뚮뜑留?(由ъ뒪??or 洹몃━??紐⑤뱶)
  */
 function renderDiaryContent() {
   const container = document.getElementById('diary-content');
@@ -915,9 +960,9 @@ function renderDiaryContent() {
     if (summaryEl) summaryEl.style.display = 'none';
     container.innerHTML = `
       <div class="empty-state">
-        <div class="empty-icon">🍽️</div>
-        <h3>이 날의 기록이 없어요</h3>
-        <p>검색 탭에서 오늘 먹은 음식을<br>기록해보세요!</p>
+        <div class="empty-icon">?띂截?/div>
+        <h3>???좎쓽 湲곕줉???놁뼱??/h3>
+        <p>寃????뿉???ㅻ뒛 癒뱀? ?뚯떇??br>湲곕줉?대낫?몄슂!</p>
       </div>`;
     return;
   }
@@ -955,34 +1000,34 @@ function renderDiaryContent() {
         <div class="diary-list-img">
           ${meal.photo_base64 
             ? `<img src="${meal.photo_base64}" style="width:52px;height:52px;object-fit:cover;border-radius:6px">`
-            : '🍽️'}
+            : '?띂截?}
         </div>
         <div class="diary-list-info">
-          <h4><span style="color: var(--primary-color); font-size: 13px; margin-right: 4px;">[${meal.meal_type || '식사'}]</span>${meal.food_name}</h4>
+          <h4><span style="color: var(--primary-color); font-size: 13px; margin-right: 4px;">[${meal.meal_type || '?앹궗'}]</span>${meal.food_name}</h4>
           <div class="nutrient-pills">
-            <span class="nutrient-pill">🔥 ${meal.api_data.AMT_NUM1}kcal</span>
-            <span class="nutrient-pill">💪 단백질 ${meal.api_data.AMT_NUM3}g</span>
-            <span class="nutrient-pill">🧈 지방 ${meal.api_data.AMT_NUM4}g</span>
-            <span class="nutrient-pill sugar-pill">🦴 당류 ${meal.api_data.AMT_NUM7}g</span>
+            <span class="nutrient-pill">?뵦 ${meal.api_data.AMT_NUM1}kcal</span>
+            <span class="nutrient-pill">?뮞 ?⑤갚吏?${meal.api_data.AMT_NUM3}g</span>
+            <span class="nutrient-pill">?쭏 吏諛?${meal.api_data.AMT_NUM4}g</span>
+            <span class="nutrient-pill sugar-pill">?┫ ?밸쪟 ${meal.api_data.AMT_NUM7}g</span>
           </div>
           <div style="display:flex;gap:4px;margin-top:6px">
             ${meal.stickers.map(s => `<span title="${s.label}">${s.emoji}</span>`).join('')}
           </div>
         </div>
-        <button class="diary-delete-btn" onclick="deleteMeal('${appState.selectedCalDate}','${meal.meal_id}')">✕</button>
+        <button class="diary-delete-btn" onclick="deleteMeal('${appState.selectedCalDate}','${meal.meal_id}')">??/button>
       </div>
     `).join('');
   } else {
-    // 그리드 모드
+    // 洹몃━??紐⑤뱶
     container.innerHTML = `<div class="diary-grid">${dayEntry.meals.map(meal => `
       <div class="diary-card" draggable="true" data-id="${meal.meal_id}" style="cursor: grab;">
         <div class="diary-card-img">
           ${meal.photo_base64 
             ? `<img src="${meal.photo_base64}" style="width:100%;height:120px;object-fit:cover;">`
-            : '🍽️'}
+            : '?띂截?}
         </div>
         <div class="diary-card-body">
-          <div class="diary-card-date">${meal.logged_at.slice(0,10)} · ${meal.meal_type || '식사'}</div>
+          <div class="diary-card-date">${meal.logged_at.slice(0,10)} 쨌 ${meal.meal_type || '?앹궗'}</div>
           <div class="diary-card-food">${meal.food_name}</div>
           <div class="diary-card-stickers">${meal.stickers.map(s=>`<span class="diary-sticker">${s.emoji}</span>`).join('')}</div>
         </div>
@@ -992,28 +1037,27 @@ function renderDiaryContent() {
 }
 
 /**
- * 식단 기록 삭제
+ * ?앸떒 湲곕줉 ??젣
  */
 function deleteMeal(dateStr, mealId) {
-  if (confirm('이 기록을 삭제할까요?')) {
+  if (confirm('??湲곕줉????젣?좉퉴??')) {
     ChloeData.deleteMealEntry(dateStr, mealId);
     renderDiaryContent();
     renderCalendar();
     renderHomeTab();
-    showToast('기록을 삭제했어요.', '');
+    showToast('湲곕줉????젣?덉뼱??', '');
   }
 }
 
 // ============================================================
-// 📊 통계 탭 초기화 및 렌더링
-// ============================================================
-function initStatsTab() { /* 초기화는 렌더링 시 처리 */ }
+// ?뱤 ?듦퀎 ??珥덇린??諛??뚮뜑留?// ============================================================
+function initStatsTab() { /* 珥덇린?붾뒗 ?뚮뜑留???泥섎━ */ }
 
 function renderStatsTab() {
   const profile = ChloeData.getUserProfile();
   const entries = ChloeData.getDiaryEntries();
   
-  // 최근 7일 데이터 계산
+  // 理쒓렐 7???곗씠??怨꾩궛
   const last7Days = getLast7Days();
   const weekEntries = last7Days.map(d => ChloeData.getDiaryByDate(d) || { date: d, meals: [], daily_totals: { calories:0, protein:0, fat:0, sugar:0, sodium:0 } });
   
@@ -1021,7 +1065,7 @@ function renderStatsTab() {
   const avgProtein = weekEntries.reduce((s, e) => s + e.daily_totals.protein, 0) / 7;
   const avgCalories = weekEntries.reduce((s, e) => s + e.daily_totals.calories, 0) / 7;
   
-  // 평균 수치 표시
+  // ?됯퇏 ?섏튂 ?쒖떆
   setEl('avg-sugar', avgSugar.toFixed(1));
   setEl('avg-sugar-bar', avgSugar.toFixed(1));
   setEl('avg-protein', avgProtein.toFixed(1));
@@ -1029,19 +1073,18 @@ function renderStatsTab() {
   setEl('avg-calories', Math.round(avgCalories));
   setEl('avg-cal-bar', Math.round(avgCalories));
   
-  // 당류 진행 바 (하루 권장 50g 기준)
+  // ?밸쪟 吏꾪뻾 諛?(?섎（ 沅뚯옣 50g 湲곗?)
   updateStatBar('sugar-bar', avgSugar, 50, true);
-  // 단백질 진행 바 (하루 목표 60g 기준)
+  // ?⑤갚吏?吏꾪뻾 諛?(?섎（ 紐⑺몴 60g 湲곗?)
   updateStatBar('protein-bar', avgProtein, 60, false);
-  // 칼로리 진행 바 (하루 목표 2000kcal 기준)
+  // 移쇰줈由?吏꾪뻾 諛?(?섎（ 紐⑺몴 2000kcal 湲곗?)
   updateStatBar('calories-bar', avgCalories, 2000, false);
   
-  // 주간 스티커 갤러리 렌더링
-  renderWeeklyStickers(last7Days, weekEntries);
+  // 二쇨컙 ?ㅽ떚而?媛ㅻ윭由??뚮뜑留?  renderWeeklyStickers(last7Days, weekEntries);
 }
 
 /**
- * 최근 7일 날짜 배열 반환
+ * 理쒓렐 7???좎쭨 諛곗뿴 諛섑솚
  */
 function getLast7Days() {
   const days = [];
@@ -1054,12 +1097,9 @@ function getLast7Days() {
 }
 
 /**
- * 통계 진행 바 업데이트
- * @param {string} barId - 진행 바 요소 ID
- * @param {number} value - 현재 값
- * @param {number} max - 최대 값
- * @param {boolean} isDanger - true면 초과 시 위험 스타일
- */
+ * ?듦퀎 吏꾪뻾 諛??낅뜲?댄듃
+ * @param {string} barId - 吏꾪뻾 諛??붿냼 ID
+ * @param {number} value - ?꾩옱 媛? * @param {number} max - 理쒕? 媛? * @param {boolean} isDanger - true硫?珥덇낵 ???꾪뿕 ?ㅽ??? */
 function updateStatBar(barId, value, max, isDanger) {
   const fill = document.getElementById(barId);
   if (!fill) return;
@@ -1069,10 +1109,9 @@ function updateStatBar(barId, value, max, isDanger) {
 }
 
 /**
- * 주간 스티커 갤러리 렌더링
- */
+ * 二쇨컙 ?ㅽ떚而?媛ㅻ윭由??뚮뜑留? */
 function renderWeeklyStickers(days, entries) {
-  const dayLabels = ['일','월','화','수','목','금','토'];
+  const dayLabels = ['??,'??,'??,'??,'紐?,'湲?,'??];
   const container = document.getElementById('weekly-stickers');
   if (!container) return;
   
@@ -1081,22 +1120,22 @@ function renderWeeklyStickers(days, entries) {
     const d = new Date(dateStr);
     const dayLabel = dayLabels[d.getDay()];
     const topSticker = entry.meals.length > 0 
-      ? (entry.meals[0]?.stickers[0]?.emoji || '📝') 
-      : '○';
+      ? (entry.meals[0]?.stickers[0]?.emoji || '?뱷') 
+      : '??;
     const hasSticker = entry.meals.length > 0;
     
     return `
       <div class="sticker-day ${hasSticker ? 'has-sticker' : ''}">
         <div class="day-label">${dayLabel}</div>
         <div class="day-sticker">${hasSticker ? topSticker : ''}</div>
-        <div style="font-size:9px;color:var(--gray-400)">${d.getDate()}일</div>
+        <div style="font-size:9px;color:var(--gray-400)">${d.getDate()}??/div>
       </div>
     `;
   }).join('');
 }
 
 // ============================================================
-// 📷 사진 업로드 처리
+// ?벜 ?ъ쭊 ?낅줈??泥섎━
 // ============================================================
 function initPhotoUpload() {
   const photoInput = document.getElementById('photo-input');
@@ -1110,13 +1149,13 @@ function initPhotoUpload() {
     const file = this.files[0];
     if (!file) return;
     
-    // 파일 크기 제한 (5MB)
+    // ?뚯씪 ?ш린 ?쒗븳 (5MB)
     if (file.size > 5 * 1024 * 1024) {
-      showToast('사진 크기는 5MB 이하만 가능해요!', 'error');
+      showToast('?ъ쭊 ?ш린??5MB ?댄븯留?媛?ν빐??', 'error');
       return;
     }
     
-    // FileReader: 파일을 Base64 문자열로 읽기
+    // FileReader: ?뚯씪??Base64 臾몄옄?대줈 ?쎄린
     const reader = new FileReader();
     reader.onload = function(e) {
       if (preview) {
@@ -1126,10 +1165,10 @@ function initPhotoUpload() {
       if (placeholder) placeholder.style.display = 'none';
       uploadArea?.classList.add('has-photo');
     };
-    reader.readAsDataURL(file); // Base64로 읽기
+    reader.readAsDataURL(file); // Base64濡??쎄린
   });
   
-  // 드래그앤드롭
+  // ?쒕옒洹몄븻?쒕∼
   uploadArea?.addEventListener('dragover', (e) => {
     e.preventDefault();
     uploadArea.style.borderColor = 'var(--mint-primary)';
@@ -1147,7 +1186,7 @@ function initPhotoUpload() {
 }
 
 // ============================================================
-// 🔔 토스트 알림 표시
+// ?뵒 ?좎뒪???뚮┝ ?쒖떆
 // ============================================================
 function showToast(message, type = '') {
   const container = document.getElementById('toast-container');
@@ -1158,8 +1197,7 @@ function showToast(message, type = '') {
   toast.textContent = message;
   container.appendChild(toast);
   
-  // 2.5초 후 자동으로 사라짐
-  setTimeout(() => {
+  // 2.5珥????먮룞?쇰줈 ?щ씪吏?  setTimeout(() => {
     toast.style.opacity = '0';
     toast.style.transform = 'translateY(10px)';
     toast.style.transition = 'all 0.3s ease';
@@ -1168,31 +1206,27 @@ function showToast(message, type = '') {
 }
 
 // ============================================================
-// 🛠️ 유틸리티 함수들
-// ============================================================
+// ?썱截??좏떥由ы떚 ?⑥닔??// ============================================================
 
-/** 요소의 텍스트 내용을 설정 */
+/** ?붿냼???띿뒪???댁슜???ㅼ젙 */
 function setEl(id, text) {
   const el = document.getElementById(id);
   if (el) el.textContent = text;
 }
 
-/** 자동완성 드롭다운 숨기기 */
+/** ?먮룞?꾩꽦 ?쒕∼?ㅼ슫 ?④린湲?*/
 function hideAutocomplete() {
   document.getElementById('autocomplete-list')?.classList.remove('visible');
 }
 
 /**
- * 로딩 상태 표시/숨기기
- * @param {boolean} show - true면 보이기
- * @param {string} message - 로딩 중 보여줄 메시지 (기본값: 클로이가 영양 데이터 찾는 중...)
+ * 濡쒕뵫 ?곹깭 ?쒖떆/?④린湲? * @param {boolean} show - true硫?蹂댁씠湲? * @param {string} message - 濡쒕뵫 以?蹂댁뿬以?硫붿떆吏 (湲곕낯媛? ?대줈?닿? ?곸뼇 ?곗씠??李얜뒗 以?..)
  */
-function showLoading(show, message = '클로이가 영양 데이터 찾는 중...') {
+function showLoading(show, message = '?대줈?닿? ?곸뼇 ?곗씠??李얜뒗 以?..') {
   const loadingEl = document.getElementById('search-loading');
   const msgEl = loadingEl?.querySelector('.loading-message');
   
-  // UI 비활성화용 요소들
-  const searchInput = document.getElementById('search-input');
+  // UI 鍮꾪솢?깊솕???붿냼??  const searchInput = document.getElementById('search-input');
   const searchBtn = document.getElementById('search-btn');
   const imageUpload = document.getElementById('image-upload');
   const photoBtn = document.querySelector('.photo-btn');
@@ -1201,7 +1235,7 @@ function showLoading(show, message = '클로이가 영양 데이터 찾는 중..
     if (msgEl) msgEl.textContent = message;
     if (loadingEl) loadingEl.style.display = 'flex';
     
-    // 로딩 중 입력 방지
+    // 濡쒕뵫 以??낅젰 諛⑹?
     if (searchInput) searchInput.disabled = true;
     if (searchBtn) searchBtn.disabled = true;
     if (imageUpload) imageUpload.disabled = true;
@@ -1209,16 +1243,17 @@ function showLoading(show, message = '클로이가 영양 데이터 찾는 중..
   } else {
     if (loadingEl) loadingEl.style.display = 'none';
     
-    // 입력창 다시 활성화
-    if (searchInput) searchInput.disabled = false;
+    // ?낅젰李??ㅼ떆 ?쒖꽦??    if (searchInput) searchInput.disabled = false;
     if (searchBtn) searchBtn.disabled = false;
     if (imageUpload) imageUpload.disabled = false;
     if (photoBtn) photoBtn.style.pointerEvents = 'auto';
   }
 }
 
-// 전역으로 노출 (HTML onclick 속성에서 호출하기 위해)
+// ?꾩뿭?쇰줈 ?몄텧 (HTML onclick ?띿꽦?먯꽌 ?몄텧?섍린 ?꾪빐)
 window.saveCurrentMeal = saveCurrentMeal;
 window.deleteMeal = deleteMeal;
 window.quickSearch = quickSearch;
 window.initPhotoUpload = initPhotoUpload;
+
+
