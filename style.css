@@ -1646,7 +1646,7 @@ html, body {
 }
 
 /* ============================================================
-   ?? ÇÇµå¹é ÈÄ¼Ó ´ëÈ­ (Chat with Chloe) ½ºÅ¸ÀÏ
+   ?? ï¿½Çµï¿½ï¿½ ï¿½Ä¼ï¿½ ï¿½ï¿½È­ (Chat with Chloe) ï¿½ï¿½Å¸ï¿½ï¿½
    ============================================================ */
 .chloe-chat-container {
   margin-top: 20px;
@@ -1666,7 +1666,7 @@ html, body {
   padding-right: 4px;
 }
 
-/* ½ºÅ©·Ñ¹Ù µðÀÚÀÎ */
+/* ï¿½ï¿½Å©ï¿½Ñ¹ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
 .chloe-chat-messages::-webkit-scrollbar {
   width: 6px;
 }
@@ -1690,7 +1690,7 @@ html, body {
 
 .chat-bubble.user {
   align-self: flex-end;
-  background-color: var(--primary-color);
+  background-color: var(--mint-primary);
   color: white;
   border-bottom-right-radius: 4px;
 }
@@ -1742,11 +1742,11 @@ html, body {
 }
 
 .chloe-chat-input:focus {
-  border-color: var(--primary-color);
+  border-color: var(--mint-primary);
 }
 
 .chloe-chat-send-btn {
-  background-color: var(--primary-color);
+  background-color: var(--mint-primary);
   color: white;
   border: none;
   border-radius: 20px;
