@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  
+  <!-- SEO & 앱 메타 정보 -->
+  <title>트레이너 쌤 클로이: 오늘의 선택 | 나만의 다이어트 도우미</title>
+  <meta name="description" content="클로이 트레이너가 내 식단을 분석해 혈당 스파이크를 잡아드립니다. 슈가 디톡스, 득근득근, 간헐적 단식 맞춤 피드백!">
+  <meta name="theme-color" content="#1ABCAB">
+  
+  <!-- 파비콘 (클로이 아이콘) -->
+  <link rel="icon" type="image/png" href="assets/chloe_avatar.png">
+  
+  <!-- 스타일시트 -->
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<div id="app">
+
+  <!-- ════════════════════════════════════════
+       🔝 상단 헤더
+       ════════════════════════════════════════ -->
+  <header class="app-header">
+    <div class="logo">
+      <div class="chloe-face-icon" style="box-shadow: 0 1px 3px rgba(0,0,0,0.2); border: 2px solid var(--white); margin-right: 8px;"></div>
+      <span>트레이너 쌤 클로이</span>
+      <span class="header-badge">BETA</span>
+    </div>
+    <!-- 스파르타 모드일 때만 나타나는 배지 -->
+    <span id="sparta-badge" class="sparta-badge" style="display:none">
+      🔥 스파르타 모드
+    </span>
+  </header>
+
+  <!-- ════════════════════════════════════════
+       📄 메인 콘텐츠 영역
+       ════════════════════════════════════════ -->
+  <main class="main-content">
+
+    <!-- ╔══════════════════════════════════╗
+         ║  🏠 탭 1: 홈 (온보딩 & 대시보드) ║
+         ╚══════════════════════════════════╝ -->
+    <section id="tab-home" class="tab-view active">
+      
+      <!-- 클로이 웰컴 배너 -->
+      <div class="chloe-banner">
+        <img src="assets/chloe_avatar.png" class="chloe-avatar" id="banner-avatar" alt="클로이 트레이너" onerror="this.outerHTML='<div class=chloe-avatar>🏋️‍♀️</div>'">
+        <div class="chloe-banner-text">
+          <h2>안녕하세요! 저는 트레이너 클로이예요 👋</h2>
+          <p id="banner-greeting">오늘도 목표를 향해 함께 달려볼까요?<br>어떤 다이어트 룰로 도전하시겠어요?</p>
+        </div>
+      </div>
+
+      <!-- 🔥 스파르타 모드 알림 배너 -->
+      <div class="sparta-alert" id="sparta-alert">
+        <div class="sparta-alert-icon">🔥</div>
+        <div>
+          <h3>스파르타 모드 돌입!</h3>
+          <p>클로이의 수제자로 인정합니다! 기준이 2배로 엄격해지니 각오 단단히 하세요!</p>
+        </div>
+      </div>
+
+      <!-- 🎛️ 다이어트 목표 설정 토글 -->
+      <div class="goals-section">
+        <h3>🎯 나의 다이어트 목표</h3>
+        <p class="goals-subtitle">3개 모두 켜면 '스파르타 모드' 돌입! 💥</p>
+        
+        <!-- 목표 1: 간헐적 단식 -->
+        <div class="goal-item">
+          <div class="goal-info">
+            <div class="goal-emoji">⏰</div>
+            <div class="goal-text">
+              <h4>간헐적 단식</h4>
+              <p>식사 창 (낮 12시 ~ 오후 8시) 관리</p>
+            </div>
+          </div>
+          <!-- 스위치 토글 (image_0.png 스타일) -->
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-fasting">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        
+        <!-- 목표 2: 슈가 디톡스 -->
+        <div class="goal-item">
+          <div class="goal-info">
+            <div class="goal-emoji">🍬</div>
+            <div class="goal-text">
+              <h4>슈가 디톡스</h4>
+              <p>당류 집중 관리 · 혈당 스파이크 방어</p>
+            </div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-sugar">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        
+        <!-- 목표 3: 득근득근 -->
+        <div class="goal-item">
+          <div class="goal-info">
+            <div class="goal-emoji">💪</div>
+            <div class="goal-text">
+              <h4>득근득근</h4>
+              <p>단백질 집중 관리 · 근육 성장 최적화</p>
+            </div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-protein">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 📊 오늘의 영양 요약 카드 -->
+      <div class="daily-summary card">
+        <div class="card-title">📅 오늘의 영양 현황</div>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <div class="value" id="today-calories">0</div>
+            <div class="unit">kcal</div>
+            <div class="label">🔥 칼로리</div>
+          </div>
+          <div class="summary-item">
+            <div class="value" id="today-protein">0</div>
+            <div class="unit">g</div>
+            <div class="label">💪 단백질</div>
+          </div>
+          <div class="summary-item">
+            <div class="value" id="today-fat">0</div>
+            <div class="unit">g</div>
+            <div class="label">🧈 지방</div>
+          </div>
+          <!-- 당류 칸 - 목표 초과 시 빨간색 -->
+          <div class="summary-item" id="summary-sugar-item">
+            <div class="value" id="today-sugar">0</div>
+            <div class="unit">g</div>
+            <div class="label">🍬 당류</div>
+          </div>
+        </div>
+        
+        <!-- 검색 탭으로 이동 버튼 -->
+        <button class="btn-primary" style="margin-top:16px" onclick="switchTab('search')">
+          + 오늘 식단 기록하기
+        </button>
+      </div>
+    </section>
+
+    <!-- ╔══════════════════════════════════╗
+         ║  🔍 탭 2: 스마트 검색            ║
+         ╚══════════════════════════════════╝ -->
+    <section id="tab-search" class="tab-view">
+      
+      <div class="card-title" style="margin-bottom:16px">
+        🔍 오늘 어떤 음식을 드셨나요?
+      </div>
+
+      <!-- 검색창 + 자동완성 드롭다운 -->
+      <div class="search-wrapper" id="search-wrapper">
+        <!-- 📷 사진 첨부 버튼 -->
+        <label for="image-upload" class="image-upload-btn" title="영양성분표 사진 첨부">📷</label>
+        <input type="file" id="image-upload" accept="image/*" style="display:none;">
+
+        <input
+          type="text"
+          id="search-input"
+          class="search-input"
+          placeholder="음식 이름 검색 (예: 닭가슴살, 바나나...)"
+          autocomplete="off"
+        >
+        <button class="search-btn" id="search-btn">🔍</button>
+        
+        <!-- 자동완성 드롭다운 -->
+        <div class="autocomplete-list" id="autocomplete-list"></div>
+      </div>
+
+      <!-- 💡 데이터 처리 방식 안내 배너 (추가) -->
+      <div style="background:var(--gray-100); border-radius:var(--border-radius); padding:12px 16px; margin-bottom:24px; font-size:13px; color:var(--gray-600); line-height:1.5;">
+        <div style="font-weight:600; color:var(--primary-color); margin-bottom:4px;">💡 클로이의 똑똑한 영양 분석 2단계</div>
+        <div><strong>1단계:</strong> 먼저 믿을 수 있는 <span style="color:var(--secondary-color);font-weight:600;">식약처 공공 DB</span>에서 10만 건 이상의 음식을 빠르게 찾아요.</div>
+        <div><strong>2단계:</strong> DB에 없는 최신/유행 음식이나, <span style="color:var(--secondary-color);font-weight:600;">사진(영양성분표)</span>을 첨부하시면 <span style="color:#1d4ed8;font-weight:600;">Google Gemini AI</span>가 사진을 읽고 영양소를 똑똑하게 추정해 냅니다!</div>
+      </div>
+
+      <!-- 사진 미리보기 영역 (선택 시 표시됨) -->
+      <div id="image-preview-container" class="image-preview-container" style="display:none;">
+        <div class="image-preview-wrapper">
+          <img id="image-preview-img" src="" alt="첨부된 사진 미리보기">
+          <button id="image-remove-btn" class="image-remove-btn" title="사진 삭제">✖</button>
+        </div>
+        <div class="image-preview-text">사진이 첨부되었습니다! 검색 버튼을 누르면 클로이가 분석해 드려요.</div>
+      </div>
+      
+      <!-- 로딩 스피너 -->
+      <!-- loading-message 클래스: JS에서 showLoading() 호출 시 메시지가 동적으로 바뀌는 요소 -->
+      <div class="search-loading" id="search-loading">
+        <div class="spinner"></div>
+        <!-- ↓ 이 텍스트가 JS에서 바뀌었! (코드상 .loading-message 클래스) -->
+        <p class="loading-message">클로이가 영양 데이터 찾는 중...</p>
+      </div>
+
+      <!-- 최근 검색어 태그 -->
+      <div class="recent-searches" id="recent-searches" style="display:none">
+        <div class="recent-title">🕐 최근 검색</div>
+        <div class="tags-row" id="recent-tags"></div>
+      </div>
+
+      <!-- ════════════════════════════════
+           💬 클로이 피드백 패널
+           (음식 선택 시 나타남)
+           ════════════════════════════════ -->
+      <div class="feedback-panel" id="feedback-panel">
+        
+        <!-- ✨ AI 분석 뱃지 (Gemini 폴백 시에만 표시됨) -->
+        <!-- toggleAIBadge(true/false)로 JS에서 제어 -->
+        <div class="ai-analysis-badge" id="ai-analysis-badge">
+          <span class="ai-badge-dot"></span>
+          ✨ 클로이의 AI 분석 &nbsp;·&nbsp; Gemini 추정치
+        </div>
+
+        <!-- 영양 정보 카드 -->
+        <div class="nutrition-card">
+          <div class="nutrition-title" id="food-title">음식 이름</div>
+          <div class="nutrition-subtitle" id="sugar-cubes-text"></div>
+          
+          <!-- 5개 영양소 그리드 -->
+          <div class="nutrition-grid">
+            <div class="nutrition-item">
+              <div class="nut-value" id="nut-calories">0</div>
+              <div class="nut-unit">kcal</div>
+              <div class="nut-label">🔥 칼로리</div>
+            </div>
+            <div class="nutrition-item">
+              <div class="nut-value" id="nut-protein">0</div>
+              <div class="nut-unit">g</div>
+              <div class="nut-label">💪 단백질</div>
+            </div>
+            <div class="nutrition-item">
+              <div class="nut-value" id="nut-fat">0</div>
+              <div class="nut-unit">g</div>
+              <div class="nut-label">🧈 지방</div>
+            </div>
+            <!-- 당류 강조 (노란 배경 + 빨간 숫자) -->
+            <div class="nutrition-item sugar-item">
+              <div class="nut-value" id="nut-sugar">0</div>
+              <div class="nut-unit">g</div>
+              <div class="nut-label">🍬 당류 ⭐</div>
+            </div>
+            <div class="nutrition-item">
+              <div class="nut-value" id="nut-sodium">0</div>
+              <div class="nut-unit">mg</div>
+              <div class="nut-label">🧂 나트륨</div>
+            </div>
+          </div>
+
+          <!-- AI 추정치 면책 고지 (공공데이터가 아니어서 폴백 시에만 보임) -->
+          <p class="ai-disclaimer" id="ai-disclaimer">
+            ⚠️ 이 데이터는 식품의약품안전처 DB에 없는 음식에 대한 Gemini AI의 <strong>예상 추정치</strong>입니다.<br>
+            실제 제품에 따라 다를 수 있으니 참고용으로만 활용해주세요.
+          </p>
+
+          <!-- 자동 스티커 -->
+          <div class="stickers-row" id="feedback-stickers"></div>
+        </div>
+
+        <!-- 클로이 피드백 메시지 박스 (소프트 옐로우 스타일) -->
+        <div style="background:var(--yellow-soft);border-radius:var(--border-radius);padding:16px;margin-bottom:12px">
+          <!-- 클로이 기분 헤더 -->
+          <div class="chloe-feedback-header" style="display: flex; align-items: center; margin-bottom: 12px;">
+            <div style="position: relative; display: inline-block; margin-right: 12px; height: 48px;">
+              <div class="chloe-face-icon" style="width: 48px; height: 48px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border: 2px solid var(--white);"></div>
+              <div id="chloe-mood-emoji" style="position: absolute; bottom: -4px; right: -4px; font-size: 16px; background: #fff; border-radius: 50%; padding: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); line-height: 1; z-index: 2;">💁‍♀️</div>
+            </div>
+            <span class="header-text" style="font-weight: 700;">클로이의 한마디</span>
+          </div>
+          <!-- 피드백 메시지들이 여기에 동적으로 들어감 -->
+          <div id="feedback-messages" class="feedback-box feedback-neutral"></div>
+        </div>
+
+        <!-- 📷 사진 첨부 영역 -->
+        <div class="card" style="padding:16px">
+          <div class="card-title" style="font-size:13px;margin-bottom:12px">📷 오늘의 먹기록 사진 (선택)</div>
+          <div class="photo-upload-area" id="photo-upload-area">
+            <div class="photo-placeholder" style="display:flex;flex-direction:column;align-items:center">
+              <div class="upload-icon">📸</div>
+              <p>사진을 드래그하거나 클릭해서 올려주세요!</p>
+              <p style="font-size:11px;color:var(--gray-400);margin-top:4px">PNG, JPG 지원 · 최대 5MB</p>
+            </div>
+            <img id="photo-preview" class="photo-preview" alt="식단 사진 미리보기">
+          </div>
+          <input type="file" id="photo-input" accept="image/*" style="display:none">
+          
+          <!-- 메모 입력창 -->
+          <textarea 
+            id="meal-memo" 
+            class="memo-input" 
+            placeholder="한마디 기록 (예: 점심 회식, 오늘 기분 좋았음 😊)"
+          ></textarea>
+        </div>
+        </div>
+
+        <!-- ⚖️ 먹은 양(인분/배수) 선택 (추가됨) -->
+        <div class="card" style="padding:16px; margin-bottom: 12px; display:flex; align-items:center; justify-content:space-between;">
+          <div class="card-title" style="font-size:13px; margin:0;">⚖️ 먹은 양 (1인분 기준)</div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <input type="number" id="meal-quantity" value="1" min="0.1" step="0.1" style="width:60px; padding:8px; border-radius:6px; border:1px solid var(--gray-200); text-align:center; font-family:inherit;">
+            <span style="font-size:13px; color:var(--gray-600);">배 (인분)</span>
+          </div>
+        </div>
+
+        <!-- 🍽️ 식사 종류 선택 (추가됨) -->
+        <div class="card" style="padding:16px; margin-bottom: 12px;">
+          <div class="card-title" style="font-size:13px;margin-bottom:12px">🍽️ 식사 종류를 선택해주세요</div>
+          <select id="meal-type-select" style="width: 100%; padding: 10px; border-radius: var(--border-radius); border: 1px solid var(--gray-200); font-family: inherit;">
+            <option value="아침">아침</option>
+            <option value="점심">점심</option>
+            <option value="저녁">저녁</option>
+            <option value="아침간식">아침간식</option>
+            <option value="점심간식">점심간식</option>
+            <option value="저녁간식">저녁간식</option>
+          </select>
+        </div>
+
+        <!-- 기록하기 버튼 -->
+        <button class="btn-primary" id="save-meal-btn" onclick="saveCurrentMeal()">
+          ✅ 클로이에게 기록 맡기기!
+        </button>
+        <button class="btn-secondary" onclick="document.getElementById('feedback-panel').classList.remove('visible');appState.selectedFood=null;">
+          다시 검색하기
+        </button>
+      </div>
+    </section>
+
+    <!-- ╔══════════════════════════════════╗
+         ║  📖 탭 3: 먹기록 갤러리          ║
+         ╚══════════════════════════════════╝ -->
+    <section id="tab-diary" class="tab-view">
+      
+      <div class="card-title" style="margin-bottom:16px">
+        📖 클로이와 함께하는 먹기록
+      </div>
+
+      <!-- 리스트 / 그리드 보기 전환 -->
+      <div class="view-toggle">
+        <button class="view-btn active" id="view-list-btn">☰ 목록 보기</button>
+        <button class="view-btn" id="view-grid-btn">⊞ 그리드 보기</button>
+      </div>
+
+      <!-- 미니 캘린더 -->
+      <div class="mini-calendar">
+        <div class="calendar-header">
+          <button class="cal-nav-btn" id="cal-prev">‹</button>
+          <span class="cal-month" id="cal-month">2026년 7월</span>
+          <button class="cal-nav-btn" id="cal-next">›</button>
+        </div>
+        
+        <!-- 요일 헤더 -->
+        <div class="calendar-grid">
+          <div class="cal-day-label" style="color:#E53935">일</div>
+          <div class="cal-day-label">월</div>
+          <div class="cal-day-label">화</div>
+          <div class="cal-day-label">수</div>
+          <div class="cal-day-label">목</div>
+          <div class="cal-day-label">금</div>
+          <div class="cal-day-label" style="color:#1976D2">토</div>
+          <!-- 날짜는 JS에서 동적으로 채워짐 -->
+          <div id="calendar-days" style="display:contents"></div>
+        </div>
+      </div>
+
+      <!-- 선택된 날짜 레이블 -->
+      <div class="card-title" style="font-size:13px;color:var(--gray-500);margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+        <div>📅 <span id="diary-date-label">날짜를 선택하세요</span>의 식단</div>
+        <div style="font-size:11px; font-weight:normal; color:var(--mint-primary)">순서를 변경하려면 길게 눌러 드래그하세요 ↕️</div>
+      </div>
+
+      <!-- 선택된 날짜 영양 요약 -->
+      <div id="diary-daily-summary" class="summary-grid" style="margin-bottom:16px; background:var(--white); padding:16px; border-radius:12px; border:1px solid var(--gray-200); box-shadow:var(--shadow-sm); display:none;">
+        <div class="summary-item">
+          <div class="value" id="diary-today-calories">0</div>
+          <div class="unit">kcal</div>
+          <div class="label">🔥 칼로리</div>
+        </div>
+        <div class="summary-item">
+          <div class="value" id="diary-today-protein">0</div>
+          <div class="unit">g</div>
+          <div class="label">💪 단백질</div>
+        </div>
+        <div class="summary-item">
+          <div class="value" id="diary-today-fat">0</div>
+          <div class="unit">g</div>
+          <div class="label">🧈 지방</div>
+        </div>
+        <div class="summary-item" id="diary-summary-sugar-item">
+          <div class="value" id="diary-today-sugar">0</div>
+          <div class="unit">g</div>
+          <div class="label">🍬 당류</div>
+        </div>
+      </div>
+      
+      <!-- 식단 목록 (JS에서 렌더링) -->
+      <div id="diary-content">
+        <div class="empty-state">
+          <div class="empty-icon">🍽️</div>
+          <h3>아직 기록이 없어요</h3>
+          <p>위 캘린더에서 날짜를 선택하거나<br>검색 탭에서 식단을 기록해봐!</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ╔══════════════════════════════════╗
+         ║  📊 탭 4: 주간 통계              ║
+         ╚══════════════════════════════════╝ -->
+    <section id="tab-stats" class="tab-view">
+      
+      <div class="card-title" style="margin-bottom:16px">
+        📊 이번 주 클로이 리포트
+      </div>
+
+      <!-- 주간 평균 수치 카드 -->
+      <div class="card">
+        <div class="card-title">📈 최근 7일 평균</div>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <div class="value" id="avg-calories">0</div>
+            <div class="unit">kcal</div>
+            <div class="label">🔥 평균 칼로리</div>
+          </div>
+          <div class="summary-item">
+            <div class="value" id="avg-protein">0</div>
+            <div class="unit">g</div>
+            <div class="label">💪 평균 단백질</div>
+          </div>
+          <div class="summary-item" style="grid-column: span 2">
+            <div class="value" id="avg-sugar">0</div>
+            <div class="unit">g (하루 평균)</div>
+            <div class="label">🍬 당류 — 하루 권장: 50g 이하</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 영양소 진행 바 -->
+      <div class="card">
+        <div class="card-title">🎯 목표 달성률</div>
+        
+        <!-- 당류 바 (초과 시 붉은색) -->
+        <div class="stat-bar-wrap">
+          <div class="stat-bar-header">
+            <span class="stat-bar-label">🍬 당류 (권장 50g 이하)</span>
+            <span class="stat-bar-value"><span id="avg-sugar-bar">0</span>g</span>
+          </div>
+          <div class="stat-bar-track">
+            <div class="stat-bar-fill" id="sugar-bar" style="width:0%"></div>
+          </div>
+        </div>
+        
+        <!-- 단백질 바 -->
+        <div class="stat-bar-wrap">
+          <div class="stat-bar-header">
+            <span class="stat-bar-label">💪 단백질 (목표 60g)</span>
+            <span class="stat-bar-value"><span id="avg-protein-bar">0</span>g</span>
+          </div>
+          <div class="stat-bar-track">
+            <div class="stat-bar-fill" id="protein-bar" style="width:0%"></div>
+          </div>
+        </div>
+        
+        <!-- 칼로리 바 -->
+        <div class="stat-bar-wrap">
+          <div class="stat-bar-header">
+            <span class="stat-bar-label">🔥 칼로리 (목표 2000kcal)</span>
+            <span class="stat-bar-value"><span id="avg-cal-bar">0</span>kcal</span>
+          </div>
+          <div class="stat-bar-track">
+            <div class="stat-bar-fill" id="calories-bar" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 주간 스티커 갤러리 -->
+      <div class="card">
+        <div class="card-title">🏅 이번 주 스티커 현황</div>
+        <div class="sticker-gallery" id="weekly-stickers"></div>
+      </div>
+      
+      <!-- 전체 초기화 버튼 (개발/테스트용) -->
+      <button 
+        class="btn-secondary" 
+        style="margin-top:8px;color:var(--gray-400);border-color:var(--gray-200);font-size:12px"
+        onclick="if(confirm('모든 기록을 초기화할까요?')){ChloeData.clearAllData();location.reload();}"
+      >
+        🗑️ 전체 초기화 (개발용)
+      </button>
+    </section>
+
+  </main><!-- end main-content -->
+
+  <!-- ════════════════════════════════════════
+       📌 하단 탭 네비게이션 바
+       ════════════════════════════════════════ -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-tab="home">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">홈</span>
+    </button>
+    <button class="nav-item" data-tab="search">
+      <span class="nav-icon">🔍</span>
+      <span class="nav-label">검색</span>
+    </button>
+    <button class="nav-item" data-tab="diary">
+      <span class="nav-icon">📖</span>
+      <span class="nav-label">먹기록</span>
+    </button>
+    <button class="nav-item" data-tab="stats">
+      <span class="nav-icon">📊</span>
+      <span class="nav-label">통계</span>
+    </button>
+  </nav>
+
+  <!-- 🔔 토스트 알림 컨테이너 -->
+  <div class="toast-container" id="toast-container"></div>
+
+</div><!-- end #app -->
+
+<!-- ════════════════════════════════════════
+     📦 JavaScript 파일들 (순서 중요!)
+     ════════════════════════════════════════ -->
+<!-- 1. 데이터 저장소 모듈 (가장 먼저 로드) -->
+<script src="data.js?v=2"></script>
+<!-- 2. 식약처 공공 API 호출 모듈 -->
+<script src="api.js?v=2"></script>
+<!-- 3. 클로이 피드백 로직 -->
+<script src="feedback.js?v=2"></script>
+<!-- 4. ✨ Gemini AI 폴백 모듈 (api.js 다음에 위치!) -->
+<script src="gemini.js?v=2"></script>
+<!-- 5. 메인 앱 로직 (위 4개가 준비된 후 실행) -->
+<script src="app.js?v=2"></script>
+
+<!-- 5. 사진 업로드 초기화 (DOM 준비 후 실행) -->
+<script>
+  // 페이지 로드 완료 후 사진 업로드 기능 초기화
+  document.addEventListener('DOMContentLoaded', initPhotoUpload);
+</script>
+
+</body>
+</html>
