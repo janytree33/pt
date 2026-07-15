@@ -1,95 +1,134 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   
-  <!-- SEO & ??硫뷀? ?뺣낫 -->
-  <title>?몃젅?대꼫 ???대줈?? ?ㅻ뒛???좏깮 | ?섎쭔???ㅼ씠?댄듃 ?꾩슦誘?/title>
-  <meta name="description" content="?대줈???몃젅?대꼫媛 ???앸떒??遺꾩꽍???덈떦 ?ㅽ뙆?댄겕瑜??≪븘?쒕┰?덈떎. ?덇? ?뷀넚?? ?앷렐?앷렐, 媛꾪뿉???⑥떇 留욎땄 ?쇰뱶諛?">
+  <!-- SEO & 앱 메타 정보 -->
+  <title>트레이너 쌤 클로이: 오늘의 선택 | 나만의 다이어트 도우미</title>
+  <meta name="description" content="클로이 트레이너가 내 식단을 분석해 혈당 스파이크를 잡아드립니다. 슈가 디톡스, 득근득근, 간헐적 단식 맞춤 피드백!">
   <meta name="theme-color" content="#1ABCAB">
   
-  <!-- ?뚮퉬肄?(?대줈???꾩씠肄? -->
+  <!-- 파비콘 (클로이 아이콘) -->
   <link rel="icon" type="image/png" href="assets/chloe_avatar.png">
   
-  <!-- ?ㅽ??쇱떆??-->
+  <!-- 스타일시트 -->
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 <div id="app">
 
-  <!-- ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧
-       ?뵝 ?곷떒 ?ㅻ뜑
-       ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧 -->
+  <!-- ============================================================
+       🛠️ JavaScript 파일들 (순서 중요!)
+       ============================================================ -->
+  <!-- 0. Supabase 및 암호화 라이브러리 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <script src="supabase_client.js?v=1"></script>
+
+  <!-- 🔐 로그인 모달 (앱 실행 시 미로그인 상태면 표시) -->
+  <div id="login-modal" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">
+    <div class="card" style="width:90%; max-width:400px; padding:24px;">
+      <h2 style="margin-bottom:12px">환영합니다! 👋</h2>
+      <p style="font-size:13px; color:#666; margin-bottom:24px;">클라우드에 데이터를 안전하게 저장하기 위해 로그인이 필요합니다.</p>
+      <input type="email" id="login-email" class="chloe-input" placeholder="이메일 주소" style="width:100%; margin-bottom:12px;">
+      <input type="password" id="login-password" class="chloe-input" placeholder="비밀번호 (6자리 이상)" style="width:100%; margin-bottom:16px;">
+      <button id="btn-login" class="btn-primary" style="width:100%; margin-bottom:8px;">로그인</button>
+      <button id="btn-signup" class="btn-secondary" style="width:100%;">회원가입</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       🔝 상단 헤더
+       ════════════════════════════════════════ -->
   <header class="app-header">
     <div class="logo">
       <div class="chloe-face-icon" style="box-shadow: 0 1px 3px rgba(0,0,0,0.2); border: 2px solid var(--white); margin-right: 8px;"></div>
-      <span>?몃젅?대꼫 ???대줈??/span>
+      <span>트레이너 쌤 클로이</span>
       <span class="header-badge">BETA</span>
     </div>
-    <!-- ?ㅽ뙆瑜댄? 紐⑤뱶???뚮쭔 ?섑??섎뒗 諛곗? -->
+    <!-- 스파르타 모드일 때만 나타나는 배지 -->
     <span id="sparta-badge" class="sparta-badge" style="display:none">
-      ?뵦 ?ㅽ뙆瑜댄? 紐⑤뱶
+      🔥 스파르타 모드
     </span>
   </header>
 
-  <!-- ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧
-       ?뱞 硫붿씤 肄섑뀗痢??곸뿭
-       ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧 -->
+  <!-- ════════════════════════════════════════
+       📄 메인 콘텐츠 영역
+       ════════════════════════════════════════ -->
   <main class="main-content">
 
-    <!-- ?붴븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븮
-         ?? ?룧 ??1: ??(?⑤낫??& ??쒕낫?? ??
-         ?싢븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븴 -->
+    <!-- ╔══════════════════════════════════╗
+         ║  🏠 탭 1: 홈 (온보딩 & 대시보드) ║
+         ╚══════════════════════════════════╝ -->
     <section id="tab-home" class="tab-view active">
       
-      <!-- ?대줈???곗뺨 諛곕꼫 -->
+      <!-- 클로이 웰컴 배너 -->
       <div class="chloe-banner">
-        <img src="assets/chloe_avatar.png" class="chloe-avatar" id="banner-avatar" alt="?대줈???몃젅?대꼫" onerror="this.outerHTML='<div class=chloe-avatar>?룍截뤴띯?截?/div>'">
+        <img src="assets/chloe_avatar.png" class="chloe-avatar" id="banner-avatar" alt="클로이 트레이너" onerror="this.outerHTML='<div class=chloe-avatar>🏋️‍♀️</div>'">
         <div class="chloe-banner-text">
-          <h2>?덈뀞?섏꽭?? ????몃젅?대꼫 ?대줈?댁삁???몝</h2>
-          <p id="banner-greeting">?ㅻ뒛??紐⑺몴瑜??ν빐 ?④퍡 ?щ젮蹂쇨퉴??<br>?대뼡 ?ㅼ씠?댄듃 猷곕줈 ?꾩쟾?섏떆寃좎뼱??</p>
+          <h2>안녕하세요! 저는 트레이너 클로이예요 👋</h2>
+          <p id="banner-greeting">오늘도 목표를 향해 함께 달려볼까요?<br>어떤 다이어트 룰로 도전하시겠어요?</p>
         </div>
       </div>
 
-      <!-- ?뵦 ?ㅽ뙆瑜댄? 紐⑤뱶 ?뚮┝ 諛곕꼫 -->
+      <!-- 🔥 스파르타 모드 알림 배너 -->
       <div class="sparta-alert" id="sparta-alert">
-        <div class="sparta-alert-icon">?뵦</div>
+        <div class="sparta-alert-icon">🔥</div>
         <div>
-          <h3>?ㅽ뙆瑜댄? 紐⑤뱶 ?뚯엯!</h3>
-          <p>?대줈?댁쓽 ?섏젣?먮줈 ?몄젙?⑸땲?? 湲곗???2諛곕줈 ?꾧꺽?댁???媛곸삤 ?⑤떒???섏꽭??</p>
+          <h3>스파르타 모드 돌입!</h3>
+          <p>클로이의 수제자로 인정합니다! 기준이 2배로 엄격해지니 각오 단단히 하세요!</p>
         </div>
       </div>
 
-      <!-- ?럾截??ㅼ씠?댄듃 紐⑺몴 ?ㅼ젙 ?좉? -->
+      <!-- 🎛️ 다이어트 목표 설정 토글 -->
       <div class="goals-section">
-        <h3>?렞 ?섏쓽 ?ㅼ씠?댄듃 紐⑺몴</h3>
-        <p class="goals-subtitle">3媛?紐⑤몢 耳쒕㈃ '?ㅽ뙆瑜댄? 紐⑤뱶' ?뚯엯! ?뮙</p>
+        <h3>🎯 나의 다이어트 목표</h3>
+        <p class="goals-subtitle">3개 모두 켜면 '스파르타 모드' 돌입! 💥</p>
         
-        <!-- 紐⑺몴 1: 媛꾪뿉???⑥떇 -->
-        <div class="goal-item">
-          <div class="goal-info">
-            <div class="goal-emoji">??/div>
-            <div class="goal-text">
-              <h4>媛꾪뿉???⑥떇</h4>
-              <p>?앹궗 李?(??12??~ ?ㅽ썑 8?? 愿由?/p>
+        <!-- 🔍 최근 검색어 (검색 전 화면) -->
+        <div id="search-idle-state" class="idle-state">
+          <!-- 자주 먹는 메뉴 (즐겨찾기) 섹션 -->
+          <div class="favorites-section" style="margin-bottom:24px;">
+            <div class="section-title">
+              <span class="icon">⭐</span> 자주 먹는 메뉴
+            </div>
+            <div id="favorites-list" class="tags-row">
+              <!-- JS에서 즐겨찾기 항목이 동적으로 생성됨 -->
             </div>
           </div>
-          <!-- ?ㅼ쐞移??좉? (image_0.png ?ㅽ??? -->
+          <div class="section-title">
+            <span class="icon">🕒</span> 최근 검색어
+          </div>
+          <div id="recent-searches" class="recent-searches">
+            <!-- JS에서 최근 검색어 동적 생성 -->
+          </div>
+        </div>
+
+        <!-- 목표 1: 간헐적 단식 -->
+        <div class="goal-item">
+          <div class="goal-info">
+            <div class="goal-emoji">⏰</div>
+            <div class="goal-text">
+              <h4>간헐적 단식</h4>
+              <p>식사 창 (낮 12시 ~ 오후 8시) 관리</p>
+            </div>
+          </div>
+          <!-- 스위치 토글 (image_0.png 스타일) -->
           <label class="toggle-switch">
             <input type="checkbox" id="toggle-fasting">
             <span class="toggle-slider"></span>
           </label>
         </div>
         
-        <!-- 紐⑺몴 2: ?덇? ?뷀넚??-->
+        <!-- 목표 2: 슈가 디톡스 -->
         <div class="goal-item">
           <div class="goal-info">
-            <div class="goal-emoji">?뜫</div>
+            <div class="goal-emoji">🍬</div>
             <div class="goal-text">
-              <h4>?덇? ?뷀넚??/h4>
-              <p>?밸쪟 吏묒쨷 愿由?쨌 ?덈떦 ?ㅽ뙆?댄겕 諛⑹뼱</p>
+              <h4>슈가 디톡스</h4>
+              <p>당류 집중 관리 · 혈당 스파이크 방어</p>
             </div>
           </div>
           <label class="toggle-switch">
@@ -98,13 +137,13 @@
           </label>
         </div>
         
-        <!-- 紐⑺몴 3: ?앷렐?앷렐 -->
+        <!-- 목표 3: 득근득근 -->
         <div class="goal-item">
           <div class="goal-info">
-            <div class="goal-emoji">?뮞</div>
+            <div class="goal-emoji">💪</div>
             <div class="goal-text">
-              <h4>?앷렐?앷렐</h4>
-              <p>?⑤갚吏?吏묒쨷 愿由?쨌 洹쇱쑁 ?깆옣 理쒖쟻??/p>
+              <h4>득근득근</h4>
+              <p>단백질 집중 관리 · 근육 성장 최적화</p>
             </div>
           </div>
           <label class="toggle-switch">
@@ -114,350 +153,365 @@
         </div>
       </div>
 
-      <!-- ?뱤 ?ㅻ뒛???곸뼇 ?붿빟 移대뱶 -->
+      <!-- 📊 오늘의 영양 요약 카드 -->
       <div class="daily-summary card">
-        <div class="card-title">?뱟 ?ㅻ뒛???곸뼇 ?꾪솴</div>
+        <div class="card-title">📅 오늘의 영양 현황</div>
         <div class="summary-grid">
           <div class="summary-item">
             <div class="value" id="today-calories">0</div>
             <div class="unit">kcal</div>
-            <div class="label">?뵦 移쇰줈由?/div>
+            <div class="label">🔥 칼로리</div>
           </div>
           <div class="summary-item">
             <div class="value" id="today-protein">0</div>
             <div class="unit">g</div>
-            <div class="label">?뮞 ?⑤갚吏?/div>
+            <div class="label">💪 단백질</div>
           </div>
           <div class="summary-item">
             <div class="value" id="today-fat">0</div>
             <div class="unit">g</div>
-            <div class="label">?쭏 吏諛?/div>
+            <div class="label">🧈 지방</div>
           </div>
-          <!-- ?밸쪟 移?- 紐⑺몴 珥덇낵 ??鍮④컙??-->
+          <!-- 당류 칸 - 목표 초과 시 빨간색 -->
           <div class="summary-item" id="summary-sugar-item">
             <div class="value" id="today-sugar">0</div>
             <div class="unit">g</div>
-            <div class="label">?뜫 ?밸쪟</div>
+            <div class="label">🍬 당류</div>
           </div>
         </div>
         
-        <!-- 寃????쑝濡??대룞 踰꾪듉 -->
+        <!-- 검색 탭으로 이동 버튼 -->
         <button class="btn-primary" style="margin-top:16px" onclick="switchTab('search')">
-          + ?ㅻ뒛 ?앸떒 湲곕줉?섍린
+          + 오늘 식단 기록하기
         </button>
       </div>
     </section>
 
-    <!-- ?붴븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븮
-         ?? ?뵇 ??2: ?ㅻ쭏??寃??           ??
-         ?싢븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븴 -->
+    <!-- ╔══════════════════════════════════╗
+         ║  🔍 탭 2: 스마트 검색            ║
+         ╚══════════════════════════════════╝ -->
     <section id="tab-search" class="tab-view">
       
       <div class="card-title" style="margin-bottom:16px">
-        ?뵇 ?ㅻ뒛 ?대뼡 ?뚯떇???쒖뀲?섏슂?
+        🔍 오늘 어떤 음식을 드셨나요?
       </div>
 
-      <!-- 寃?됱갹 + ?먮룞?꾩꽦 ?쒕∼?ㅼ슫 -->
+      <!-- 검색창 + 자동완성 드롭다운 -->
       <div class="search-wrapper" id="search-wrapper">
-        <!-- ?벜 ?ъ쭊 泥⑤? 踰꾪듉 -->
-        <label for="image-upload" class="image-upload-btn" title="?곸뼇?깅텇???ъ쭊 泥⑤?">?벜</label>
+        <!-- 📷 사진 첨부 버튼 -->
+        <label for="image-upload" class="image-upload-btn" title="영양성분표 사진 첨부">📷</label>
         <input type="file" id="image-upload" accept="image/*" style="display:none;">
 
         <input
           type="text"
           id="search-input"
           class="search-input"
-          placeholder="?뚯떇 ?대쫫 寃??(?? ????댁궡, 諛붾굹??..)"
+          placeholder="음식 이름 검색 (예: 닭가슴살, 바나나...)"
           autocomplete="off"
         >
-        <button class="search-btn" id="search-btn">?뵇</button>
+        <button class="search-btn" id="search-btn">🔍</button>
         
-        <!-- ?먮룞?꾩꽦 ?쒕∼?ㅼ슫 -->
+        <!-- 자동완성 드롭다운 -->
         <div class="autocomplete-list" id="autocomplete-list"></div>
       </div>
 
-      <!-- ?뮕 ?곗씠??泥섎━ 諛⑹떇 ?덈궡 諛곕꼫 (異붽?) -->
+      <!-- 💡 데이터 처리 방식 안내 배너 (추가) -->
       <div style="background:var(--gray-100); border-radius:var(--border-radius); padding:12px 16px; margin-bottom:24px; font-size:13px; color:var(--gray-600); line-height:1.5;">
-        <div style="font-weight:600; color:var(--primary-color); margin-bottom:4px;">?뮕 ?대줈?댁쓽 ?묐삊???곸뼇 遺꾩꽍 2?④퀎</div>
-        <div><strong>1?④퀎:</strong> 癒쇱? 誘우쓣 ???덈뒗 <span style="color:var(--secondary-color);font-weight:600;">?앹빟泥?怨듦났 DB</span>?먯꽌 10留?嫄??댁긽???뚯떇??鍮좊Ⅴ寃?李얠븘??</div>
-        <div><strong>2?④퀎:</strong> DB???녿뒗 理쒖떊/?좏뻾 ?뚯떇?대굹, <span style="color:var(--secondary-color);font-weight:600;">?ъ쭊(?곸뼇?깅텇??</span>??泥⑤??섏떆硫?<span style="color:#1d4ed8;font-weight:600;">Google Gemini AI</span>媛 ?ъ쭊???쎄퀬 ?곸뼇?뚮? ?묐삊?섍쾶 異붿젙???낅땲??</div>
+        <div style="font-weight:600; color:var(--primary-color); margin-bottom:4px;">💡 클로이의 똑똑한 영양 분석 2단계</div>
+        <div><strong>1단계:</strong> 먼저 믿을 수 있는 <span style="color:var(--secondary-color);font-weight:600;">식약처 공공 DB</span>에서 10만 건 이상의 음식을 빠르게 찾아요.</div>
+        <div><strong>2단계:</strong> DB에 없는 최신/유행 음식이나, <span style="color:var(--secondary-color);font-weight:600;">사진(영양성분표)</span>을 첨부하시면 <span style="color:#1d4ed8;font-weight:600;">Google Gemini AI</span>가 사진을 읽고 영양소를 똑똑하게 추정해 냅니다!</div>
       </div>
 
-      <!-- ?ъ쭊 誘몃━蹂닿린 ?곸뿭 (?좏깮 ???쒖떆?? -->
+      <!-- 사진 미리보기 영역 (선택 시 표시됨) -->
       <div id="image-preview-container" class="image-preview-container" style="display:none;">
         <div class="image-preview-wrapper">
-          <img id="image-preview-img" src="" alt="泥⑤????ъ쭊 誘몃━蹂닿린">
-          <button id="image-remove-btn" class="image-remove-btn" title="?ъ쭊 ??젣">??/button>
+          <img id="image-preview-img" src="" alt="첨부된 사진 미리보기">
+          <button id="image-remove-btn" class="image-remove-btn" title="사진 삭제">✖</button>
         </div>
-        <div class="image-preview-text">?ъ쭊??泥⑤??섏뿀?듬땲?? 寃??踰꾪듉???꾨Ⅴ硫??대줈?닿? 遺꾩꽍???쒕젮??</div>
+        <div class="image-preview-text">사진이 첨부되었습니다! 검색 버튼을 누르면 클로이가 분석해 드려요.</div>
       </div>
       
-      <!-- 濡쒕뵫 ?ㅽ뵾??-->
-      <!-- loading-message ?대옒?? JS?먯꽌 showLoading() ?몄텧 ??硫붿떆吏媛 ?숈쟻?쇰줈 諛붾뚮뒗 ?붿냼 -->
+      <!-- 로딩 스피너 -->
+      <!-- loading-message 클래스: JS에서 showLoading() 호출 시 메시지가 동적으로 바뀌는 요소 -->
       <div class="search-loading" id="search-loading">
         <div class="spinner"></div>
-        <!-- ?????띿뒪?멸? JS?먯꽌 諛붾뚯뿀! (肄붾뱶??.loading-message ?대옒?? -->
-        <p class="loading-message">?대줈?닿? ?곸뼇 ?곗씠??李얜뒗 以?..</p>
+        <!-- ↓ 이 텍스트가 JS에서 바뀌었! (코드상 .loading-message 클래스) -->
+        <p class="loading-message">클로이가 영양 데이터 찾는 중...</p>
       </div>
 
-      <!-- 理쒓렐 寃?됱뼱 ?쒓렇 -->
+      <!-- 최근 검색어 태그 -->
       <div class="recent-searches" id="recent-searches" style="display:none">
-        <div class="recent-title">?븧 理쒓렐 寃??/div>
+        <div class="recent-title">🕐 최근 검색</div>
         <div class="tags-row" id="recent-tags"></div>
       </div>
 
-      <!-- ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧
-           ?뮠 ?대줈???쇰뱶諛??⑤꼸
-           (?뚯떇 ?좏깮 ???섑???
-           ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧 -->
+      <!-- ════════════════════════════════
+           💬 클로이 피드백 패널
+           (음식 선택 시 나타남)
+           ════════════════════════════════ -->
       <div class="feedback-panel" id="feedback-panel">
         
-        <!-- ??AI 遺꾩꽍 諭껋? (Gemini ?대갚 ?쒖뿉留??쒖떆?? -->
-        <!-- toggleAIBadge(true/false)濡?JS?먯꽌 ?쒖뼱 -->
+        <!-- ✨ AI 분석 뱃지 (Gemini 폴백 시에만 표시됨) -->
+        <!-- toggleAIBadge(true/false)로 JS에서 제어 -->
         <div class="ai-analysis-badge" id="ai-analysis-badge">
           <span class="ai-badge-dot"></span>
-          ???대줈?댁쓽 AI 遺꾩꽍 &nbsp;쨌&nbsp; Gemini 異붿젙移?
+          ✨ 클로이의 AI 분석 &nbsp;·&nbsp; Gemini 추정치
         </div>
 
-        <!-- ?곸뼇 ?뺣낫 移대뱶 -->
+        <!-- 영양 정보 카드 -->
         <div class="nutrition-card">
-          <div class="nutrition-title" id="food-title">?뚯떇 ?대쫫</div>
+          <div class="nutrition-title" id="food-title">음식 이름</div>
           <div class="nutrition-subtitle" id="sugar-cubes-text"></div>
           
-          <!-- 5媛??곸뼇??洹몃━??-->
+          <!-- 5개 영양소 그리드 -->
           <div class="nutrition-grid">
             <div class="nutrition-item">
               <div class="nut-value" id="nut-calories">0</div>
               <div class="nut-unit">kcal</div>
-              <div class="nut-label">?뵦 移쇰줈由?/div>
+              <div class="nut-label">🔥 칼로리</div>
             </div>
             <div class="nutrition-item">
               <div class="nut-value" id="nut-protein">0</div>
               <div class="nut-unit">g</div>
-              <div class="nut-label">?뮞 ?⑤갚吏?/div>
+              <div class="nut-label">💪 단백질</div>
             </div>
             <div class="nutrition-item">
               <div class="nut-value" id="nut-fat">0</div>
               <div class="nut-unit">g</div>
-              <div class="nut-label">?쭏 吏諛?/div>
+              <div class="nut-label">🧈 지방</div>
             </div>
-            <!-- ?밸쪟 媛뺤“ (?몃? 諛곌꼍 + 鍮④컙 ?レ옄) -->
+            <!-- 당류 강조 (노란 배경 + 빨간 숫자) -->
             <div class="nutrition-item sugar-item">
               <div class="nut-value" id="nut-sugar">0</div>
               <div class="nut-unit">g</div>
-              <div class="nut-label">?뜫 ?밸쪟 狩?/div>
+              <div class="nut-label">🍬 당류 ⭐</div>
             </div>
             <div class="nutrition-item">
               <div class="nut-value" id="nut-sodium">0</div>
               <div class="nut-unit">mg</div>
-              <div class="nut-label">?쭆 ?섑듃瑜?/div>
+              <div class="nut-label">🧂 나트륨</div>
             </div>
           </div>
 
-          <!-- AI 異붿젙移?硫댁콉 怨좎? (怨듦났?곗씠?곌? ?꾨땲?댁꽌 ?대갚 ?쒖뿉留?蹂댁엫) -->
+          <!-- AI 추정치 면책 고지 (공공데이터가 아니어서 폴백 시에만 보임) -->
           <p class="ai-disclaimer" id="ai-disclaimer">
-            ?좑툘 ???곗씠?곕뒗 ?앺뭹?섏빟?덉븞?꾩쿂 DB???녿뒗 ?뚯떇?????Gemini AI??<strong>?덉긽 異붿젙移?/strong>?낅땲??<br>
-            ?ㅼ젣 ?쒗뭹???곕씪 ?ㅻ? ???덉쑝??李멸퀬?⑹쑝濡쒕쭔 ?쒖슜?댁＜?몄슂.
+            ⚠️ 이 데이터는 식품의약품안전처 DB에 없는 음식에 대한 Gemini AI의 <strong>예상 추정치</strong>입니다.<br>
+            실제 제품에 따라 다를 수 있으니 참고용으로만 활용해주세요.
           </p>
 
-          <!-- ?먮룞 ?ㅽ떚而?-->
+          <!-- 자동 스티커 -->
           <div class="stickers-row" id="feedback-stickers"></div>
         </div>
 
-        <!-- ?대줈???쇰뱶諛?硫붿떆吏 諛뺤뒪 (?뚰봽???먮줈???ㅽ??? -->
+        <!-- 클로이 피드백 메시지 박스 (소프트 옐로우 스타일) -->
         <div style="background:var(--yellow-soft);border-radius:var(--border-radius);padding:16px;margin-bottom:12px">
-          <!-- ?대줈??湲곕텇 ?ㅻ뜑 -->
+          <!-- 클로이 기분 헤더 -->
           <div class="chloe-feedback-header" style="display: flex; align-items: center; margin-bottom: 12px;">
             <div style="position: relative; display: inline-block; margin-right: 12px; height: 48px;">
               <div class="chloe-face-icon" style="width: 48px; height: 48px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border: 2px solid var(--white);"></div>
-              <div id="chloe-mood-emoji" style="position: absolute; bottom: -4px; right: -4px; font-size: 16px; background: #fff; border-radius: 50%; padding: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); line-height: 1; z-index: 2;">?뭲?띯?截?/div>
+              <div id="chloe-mood-emoji" style="position: absolute; bottom: -4px; right: -4px; font-size: 16px; background: #fff; border-radius: 50%; padding: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); line-height: 1; z-index: 2;">💁‍♀️</div>
             </div>
-            <span class="header-text" style="font-weight: 700;">?대줈?댁쓽 ?쒕쭏??/span>
+            <span class="header-text" style="font-weight: 700;">클로이의 한마디</span>
           </div>
-          <!-- ?쇰뱶諛?硫붿떆吏?ㅼ씠 ?ш린???숈쟻?쇰줈 ?ㅼ뼱媛?-->
+          <!-- 피드백 메시지들이 여기에 동적으로 들어감 -->
           <div id="feedback-messages" class="feedback-box feedback-neutral"></div>
 
-          <!-- ?뮠 ?꾩냽 ???(Chat with Chloe) ?곸뿭 異붽? -->
+          <!-- 💬 후속 대화 (Chat with Chloe) 영역 추가 -->
           <div class="chloe-chat-container">
             <div id="chloe-chat-messages" class="chloe-chat-messages">
-              <!-- 梨꾪똿 留먰뭾?좊뱾???숈쟻?쇰줈 ?ㅼ뼱媛??곸뿭 -->
+              <!-- 채팅 말풍선들이 동적으로 들어갈 영역 -->
             </div>
             <div class="chloe-chat-input-area">
-              <input type="text" id="chloe-chat-input" class="chloe-chat-input" placeholder="?대줈?댁뿉寃???沅곴툑????臾쇱뼱蹂닿린!">
-              <button id="chloe-chat-send-btn" class="chloe-chat-send-btn">?꾩넚</button>
+              <input type="text" id="chloe-chat-input" class="chloe-chat-input" placeholder="클로이에게 더 궁금한 점 물어보기!">
+              <button id="chloe-chat-send-btn" class="chloe-chat-send-btn">전송</button>
             </div>
           </div>
         </div>
 
-        <!-- ?벜 ?ъ쭊 泥⑤? ?곸뿭 -->
+        <!-- 📷 사진 첨부 영역 -->
         <div class="card" style="padding:16px">
-          <div class="card-title" style="font-size:13px;margin-bottom:12px">?벜 ?ㅻ뒛??癒밴린濡??ъ쭊 (?좏깮)</div>
+          <div class="card-title" style="font-size:13px;margin-bottom:12px">📷 오늘의 먹기록 사진 (선택)</div>
           <div class="photo-upload-area" id="photo-upload-area">
             <div class="photo-placeholder" style="display:flex;flex-direction:column;align-items:center">
-              <div class="upload-icon">?벝</div>
-              <p>?ъ쭊???쒕옒洹명븯嫄곕굹 ?대┃?댁꽌 ?щ젮二쇱꽭??</p>
-              <p style="font-size:11px;color:var(--gray-400);margin-top:4px">PNG, JPG 吏??쨌 理쒕? 5MB</p>
+              <div class="upload-icon">📸</div>
+              <p>사진을 드래그하거나 클릭해서 올려주세요!</p>
+              <p style="font-size:11px;color:var(--gray-400);margin-top:4px">PNG, JPG 지원 · 최대 5MB</p>
             </div>
-            <img id="photo-preview" class="photo-preview" alt="?앸떒 ?ъ쭊 誘몃━蹂닿린">
+            <img id="photo-preview" class="photo-preview" alt="식단 사진 미리보기">
           </div>
           <input type="file" id="photo-input" accept="image/*" style="display:none">
           
-          <!-- 硫붾え ?낅젰李?-->
+          <!-- 메모 입력창 -->
           <textarea 
             id="meal-memo" 
             class="memo-input" 
-            placeholder="?쒕쭏??湲곕줉 (?? ?먯떖 ?뚯떇, ?ㅻ뒛 湲곕텇 醫뗭븯???삃)"
+            placeholder="한마디 기록 (예: 점심 회식, 오늘 기분 좋았음 😊)"
           ></textarea>
         </div>
 
-        <!-- ?뽳툘 癒뱀? ???몃텇/諛곗닔) ?좏깮 (異붽??? -->
+        <!-- 클로이의 팩트 폭력 피드백 -->
+        <div id="chloe-feedback-msg" class="feedback-msg">
+          <!-- JS로 동적 생성 -->
+        </div>
+        
+        <!-- 즐겨찾기(메모리) 추가 버튼 -->
+        <button id="btn-add-favorite" class="btn-secondary" style="width:100%; margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          ⭐ 이 식단을 자주 먹는 메뉴에 저장하기
+        </button>
+
+        <!-- 먹기록에 추가 버튼 -->
+        <button id="btn-add-diary" class="btn-primary" style="width:100%; margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <span class="icon">📝</span> 먹기록 캘린더에 바로 추가!
+        </button>
+
+        <!-- ⚖️ 먹은 양(인분/배수) 선택 (추가됨) -->
         <div class="card" style="padding:16px; margin-bottom: 12px; display:flex; align-items:center; justify-content:space-between;">
-          <div class="card-title" style="font-size:13px; margin:0;">?뽳툘 癒뱀? ??(1?몃텇 湲곗?)</div>
+          <div class="card-title" style="font-size:13px; margin:0;">⚖️ 먹은 양 (1인분 기준)</div>
           <div style="display:flex; align-items:center; gap:8px;">
             <input type="number" id="meal-quantity" value="1" min="0.1" step="0.1" style="width:60px; padding:8px; border-radius:6px; border:1px solid var(--gray-200); text-align:center; font-family:inherit;">
-            <span style="font-size:13px; color:var(--gray-600);">諛?(?몃텇)</span>
+            <span style="font-size:13px; color:var(--gray-600);">배 (인분)</span>
           </div>
         </div>
 
-        <!-- ?띂截??앹궗 醫낅쪟 ?좏깮 (異붽??? -->
+        <!-- 🍽️ 식사 종류 선택 (추가됨) -->
         <div class="card" style="padding:16px; margin-bottom: 12px;">
-          <div class="card-title" style="font-size:13px;margin-bottom:12px">?띂截??앹궗 醫낅쪟瑜??좏깮?댁＜?몄슂</div>
+          <div class="card-title" style="font-size:13px;margin-bottom:12px">🍽️ 식사 종류를 선택해주세요</div>
           <select id="meal-type-select" style="width: 100%; padding: 10px; border-radius: var(--border-radius); border: 1px solid var(--gray-200); font-family: inherit;">
-            <option value="?꾩묠">?꾩묠</option>
-            <option value="?먯떖">?먯떖</option>
-            <option value="???>???/option>
-            <option value="?꾩묠媛꾩떇">?꾩묠媛꾩떇</option>
-            <option value="?먯떖媛꾩떇">?먯떖媛꾩떇</option>
-            <option value="??곴컙??>??곴컙??/option>
+            <option value="아침">아침</option>
+            <option value="점심">점심</option>
+            <option value="저녁">저녁</option>
+            <option value="아침간식">아침간식</option>
+            <option value="점심간식">점심간식</option>
+            <option value="저녁간식">저녁간식</option>
           </select>
         </div>
 
-        <!-- 湲곕줉?섍린 踰꾪듉 -->
+        <!-- 기록하기 버튼 -->
         <button class="btn-primary" id="save-meal-btn" onclick="saveCurrentMeal()">
-          ???대줈?댁뿉寃?湲곕줉 留↔린湲?
+          ✅ 클로이에게 기록 맡기기!
         </button>
         <button class="btn-secondary" onclick="document.getElementById('feedback-panel').classList.remove('visible');appState.selectedFood=null;">
-          ?ㅼ떆 寃?됲븯湲?
+          다시 검색하기
         </button>
       </div>
     </section>
 
-    <!-- ?붴븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븮
-         ?? ?뱰 ??3: 癒밴린濡?媛ㅻ윭由?         ??
-         ?싢븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븴 -->
+    <!-- ╔══════════════════════════════════╗
+         ║  📖 탭 3: 먹기록 갤러리          ║
+         ╚══════════════════════════════════╝ -->
     <section id="tab-diary" class="tab-view">
       
       <div class="card-title" style="margin-bottom:16px">
-        ?뱰 ?대줈?댁? ?④퍡?섎뒗 癒밴린濡?
+        📖 클로이와 함께하는 먹기록
       </div>
 
-      <!-- 由ъ뒪??/ 洹몃━??蹂닿린 ?꾪솚 -->
+      <!-- 리스트 / 그리드 보기 전환 -->
       <div class="view-toggle">
-        <button class="view-btn active" id="view-list-btn">??紐⑸줉 蹂닿린</button>
-        <button class="view-btn" id="view-grid-btn">??洹몃━??蹂닿린</button>
+        <button class="view-btn active" id="view-list-btn">☰ 목록 보기</button>
+        <button class="view-btn" id="view-grid-btn">⊞ 그리드 보기</button>
       </div>
 
-      <!-- 誘몃땲 罹섎┛??-->
+      <!-- 미니 캘린더 -->
       <div class="mini-calendar">
         <div class="calendar-header">
-          <button class="cal-nav-btn" id="cal-prev">??/button>
-          <span class="cal-month" id="cal-month">2026??7??/span>
-          <button class="cal-nav-btn" id="cal-next">??/button>
+          <button class="cal-nav-btn" id="cal-prev">‹</button>
+          <span class="cal-month" id="cal-month">2026년 7월</span>
+          <button class="cal-nav-btn" id="cal-next">›</button>
         </div>
         
-        <!-- ?붿씪 ?ㅻ뜑 -->
+        <!-- 요일 헤더 -->
         <div class="calendar-grid">
-          <div class="cal-day-label" style="color:#E53935">??/div>
-          <div class="cal-day-label">??/div>
-          <div class="cal-day-label">??/div>
-          <div class="cal-day-label">??/div>
-          <div class="cal-day-label">紐?/div>
-          <div class="cal-day-label">湲?/div>
-          <div class="cal-day-label" style="color:#1976D2">??/div>
-          <!-- ?좎쭨??JS?먯꽌 ?숈쟻?쇰줈 梨꾩썙吏?-->
+          <div class="cal-day-label" style="color:#E53935">일</div>
+          <div class="cal-day-label">월</div>
+          <div class="cal-day-label">화</div>
+          <div class="cal-day-label">수</div>
+          <div class="cal-day-label">목</div>
+          <div class="cal-day-label">금</div>
+          <div class="cal-day-label" style="color:#1976D2">토</div>
+          <!-- 날짜는 JS에서 동적으로 채워짐 -->
           <div id="calendar-days" style="display:contents"></div>
         </div>
       </div>
 
-      <!-- ?좏깮???좎쭨 ?덉씠釉?-->
+      <!-- 선택된 날짜 레이블 -->
       <div class="card-title" style="font-size:13px;color:var(--gray-500);margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
-        <div>?뱟 <span id="diary-date-label">?좎쭨瑜??좏깮?섏꽭??/span>???앸떒</div>
-        <div style="font-size:11px; font-weight:normal; color:var(--mint-primary)">?쒖꽌瑜?蹂寃쏀븯?ㅻ㈃ 湲멸쾶 ?뚮윭 ?쒕옒洹명븯?몄슂 ?뺧툘</div>
+        <div>📅 <span id="diary-date-label">날짜를 선택하세요</span>의 식단</div>
+        <div style="font-size:11px; font-weight:normal; color:var(--mint-primary)">순서를 변경하려면 길게 눌러 드래그하세요 ↕️</div>
       </div>
 
-      <!-- ?좏깮???좎쭨 ?곸뼇 ?붿빟 -->
+      <!-- 선택된 날짜 영양 요약 -->
       <div id="diary-daily-summary" class="summary-grid" style="margin-bottom:16px; background:var(--white); padding:16px; border-radius:12px; border:1px solid var(--gray-200); box-shadow:var(--shadow-sm); display:none;">
         <div class="summary-item">
           <div class="value" id="diary-today-calories">0</div>
           <div class="unit">kcal</div>
-          <div class="label">?뵦 移쇰줈由?/div>
+          <div class="label">🔥 칼로리</div>
         </div>
         <div class="summary-item">
           <div class="value" id="diary-today-protein">0</div>
           <div class="unit">g</div>
-          <div class="label">?뮞 ?⑤갚吏?/div>
+          <div class="label">💪 단백질</div>
         </div>
         <div class="summary-item">
           <div class="value" id="diary-today-fat">0</div>
           <div class="unit">g</div>
-          <div class="label">?쭏 吏諛?/div>
+          <div class="label">🧈 지방</div>
         </div>
         <div class="summary-item" id="diary-summary-sugar-item">
           <div class="value" id="diary-today-sugar">0</div>
           <div class="unit">g</div>
-          <div class="label">?뜫 ?밸쪟</div>
+          <div class="label">🍬 당류</div>
         </div>
       </div>
       
-      <!-- ?앸떒 紐⑸줉 (JS?먯꽌 ?뚮뜑留? -->
+      <!-- 식단 목록 (JS에서 렌더링) -->
       <div id="diary-content">
         <div class="empty-state">
-          <div class="empty-icon">?띂截?/div>
-          <h3>?꾩쭅 湲곕줉???놁뼱??/h3>
-          <p>??罹섎┛?붿뿉???좎쭨瑜??좏깮?섍굅??br>寃????뿉???앸떒??湲곕줉?대킄!</p>
+          <div class="empty-icon">🍽️</div>
+          <h3>아직 기록이 없어요</h3>
+          <p>위 캘린더에서 날짜를 선택하거나<br>검색 탭에서 식단을 기록해봐!</p>
         </div>
       </div>
     </section>
 
-    <!-- ?붴븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븮
-         ?? ?뱤 ??4: 二쇨컙 ?듦퀎              ??
-         ?싢븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븴 -->
+    <!-- ╔══════════════════════════════════╗
+         ║  📊 탭 4: 주간 통계              ║
+         ╚══════════════════════════════════╝ -->
     <section id="tab-stats" class="tab-view">
       
       <div class="card-title" style="margin-bottom:16px">
-        ?뱤 ?대쾲 二??대줈??由ы룷??
+        📊 이번 주 클로이 리포트
       </div>
 
-      <!-- 二쇨컙 ?됯퇏 ?섏튂 移대뱶 -->
+      <!-- 주간 평균 수치 카드 -->
       <div class="card">
-        <div class="card-title">?뱢 理쒓렐 7???됯퇏</div>
+        <div class="card-title">📈 최근 7일 평균</div>
         <div class="summary-grid">
           <div class="summary-item">
             <div class="value" id="avg-calories">0</div>
             <div class="unit">kcal</div>
-            <div class="label">?뵦 ?됯퇏 移쇰줈由?/div>
+            <div class="label">🔥 평균 칼로리</div>
           </div>
           <div class="summary-item">
             <div class="value" id="avg-protein">0</div>
             <div class="unit">g</div>
-            <div class="label">?뮞 ?됯퇏 ?⑤갚吏?/div>
+            <div class="label">💪 평균 단백질</div>
           </div>
           <div class="summary-item" style="grid-column: span 2">
             <div class="value" id="avg-sugar">0</div>
-            <div class="unit">g (?섎（ ?됯퇏)</div>
-            <div class="label">?뜫 ?밸쪟 ???섎（ 沅뚯옣: 50g ?댄븯</div>
+            <div class="unit">g (하루 평균)</div>
+            <div class="label">🍬 당류 — 하루 권장: 50g 이하</div>
           </div>
         </div>
       </div>
 
-      <!-- ?곸뼇??吏꾪뻾 諛?-->
+      <!-- 영양소 진행 바 -->
       <div class="card">
-        <div class="card-title">?렞 紐⑺몴 ?ъ꽦瑜?/div>
+        <div class="card-title">🎯 목표 달성률</div>
         
-        <!-- ?밸쪟 諛?(珥덇낵 ??遺됱??? -->
+        <!-- 당류 바 (초과 시 붉은색) -->
         <div class="stat-bar-wrap">
           <div class="stat-bar-header">
-            <span class="stat-bar-label">?뜫 ?밸쪟 (沅뚯옣 50g ?댄븯)</span>
+            <span class="stat-bar-label">🍬 당류 (권장 50g 이하)</span>
             <span class="stat-bar-value"><span id="avg-sugar-bar">0</span>g</span>
           </div>
           <div class="stat-bar-track">
@@ -465,10 +519,10 @@
           </div>
         </div>
         
-        <!-- ?⑤갚吏?諛?-->
+        <!-- 단백질 바 -->
         <div class="stat-bar-wrap">
           <div class="stat-bar-header">
-            <span class="stat-bar-label">?뮞 ?⑤갚吏?(紐⑺몴 60g)</span>
+            <span class="stat-bar-label">💪 단백질 (목표 60g)</span>
             <span class="stat-bar-value"><span id="avg-protein-bar">0</span>g</span>
           </div>
           <div class="stat-bar-track">
@@ -476,10 +530,10 @@
           </div>
         </div>
         
-        <!-- 移쇰줈由?諛?-->
+        <!-- 칼로리 바 -->
         <div class="stat-bar-wrap">
           <div class="stat-bar-header">
-            <span class="stat-bar-label">?뵦 移쇰줈由?(紐⑺몴 2000kcal)</span>
+            <span class="stat-bar-label">🔥 칼로리 (목표 2000kcal)</span>
             <span class="stat-bar-value"><span id="avg-cal-bar">0</span>kcal</span>
           </div>
           <div class="stat-bar-track">
@@ -488,72 +542,70 @@
         </div>
       </div>
 
-      <!-- 二쇨컙 ?ㅽ떚而?媛ㅻ윭由?-->
+      <!-- 주간 스티커 갤러리 -->
       <div class="card">
-        <div class="card-title">?룆 ?대쾲 二??ㅽ떚而??꾪솴</div>
+        <div class="card-title">🏅 이번 주 스티커 현황</div>
         <div class="sticker-gallery" id="weekly-stickers"></div>
       </div>
       
-      <!-- ?꾩껜 珥덇린??踰꾪듉 (媛쒕컻/?뚯뒪?몄슜) -->
+      <!-- 전체 초기화 버튼 (개발/테스트용) -->
       <button 
         class="btn-secondary" 
         style="margin-top:8px;color:var(--gray-400);border-color:var(--gray-200);font-size:12px"
-        onclick="if(confirm('紐⑤뱺 湲곕줉??珥덇린?뷀븷源뚯슂?')){ChloeData.clearAllData();location.reload();}"
+        onclick="if(confirm('모든 기록을 초기화할까요?')){ChloeData.clearAllData();location.reload();}"
       >
-        ?뿊截??꾩껜 珥덇린??(媛쒕컻??
+        🗑️ 전체 초기화 (개발용)
       </button>
     </section>
 
   </main><!-- end main-content -->
 
-  <!-- ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧
-       ?뱦 ?섎떒 ???ㅻ퉬寃뚯씠??諛?
-       ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧 -->
+  <!-- ════════════════════════════════════════
+       📌 하단 탭 네비게이션 바
+       ════════════════════════════════════════ -->
   <nav class="bottom-nav">
     <button class="nav-item active" data-tab="home">
-      <span class="nav-icon">?룧</span>
-      <span class="nav-label">??/span>
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">홈</span>
     </button>
     <button class="nav-item" data-tab="search">
-      <span class="nav-icon">?뵇</span>
-      <span class="nav-label">寃??/span>
+      <span class="nav-icon">🔍</span>
+      <span class="nav-label">검색</span>
     </button>
     <button class="nav-item" data-tab="diary">
-      <span class="nav-icon">?뱰</span>
-      <span class="nav-label">癒밴린濡?/span>
+      <span class="nav-icon">📖</span>
+      <span class="nav-label">먹기록</span>
     </button>
     <button class="nav-item" data-tab="stats">
-      <span class="nav-icon">?뱤</span>
-      <span class="nav-label">?듦퀎</span>
+      <span class="nav-icon">📊</span>
+      <span class="nav-label">통계</span>
     </button>
   </nav>
 
-  <!-- ?뵒 ?좎뒪???뚮┝ 而⑦뀒?대꼫 -->
+  <!-- 🔔 토스트 알림 컨테이너 -->
   <div class="toast-container" id="toast-container"></div>
 
 </div><!-- end #app -->
 
-<!-- ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧
-     ?벀 JavaScript ?뚯씪??(?쒖꽌 以묒슂!)
-     ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧 -->
-<!-- 1. ?곗씠????μ냼 紐⑤뱢 (媛??癒쇱? 濡쒕뱶) -->
+<!-- ════════════════════════════════════════
+     📦 JavaScript 파일들 (순서 중요!)
+     ════════════════════════════════════════ -->
+<!-- 1. 데이터 저장소 모듈 (가장 먼저 로드) -->
 <script src="data.js?v=2"></script>
-<!-- 2. ?앹빟泥?怨듦났 API ?몄텧 紐⑤뱢 -->
+<!-- 2. 식약처 공공 API 호출 모듈 -->
 <script src="api.js?v=2"></script>
-<!-- 3. ?대줈???쇰뱶諛?濡쒖쭅 -->
+<!-- 3. 클로이 피드백 로직 -->
 <script src="feedback.js?v=2"></script>
-<!-- 4. ??Gemini AI ?대갚 紐⑤뱢 (api.js ?ㅼ쓬???꾩튂!) -->
+<!-- 4. ✨ Gemini AI 폴백 모듈 (api.js 다음에 위치!) -->
 <script src="gemini.js?v=2"></script>
-<!-- 5. 硫붿씤 ??濡쒖쭅 (??4媛쒓? 以鍮꾨맂 ???ㅽ뻾) -->
+<!-- 5. 메인 앱 로직 (위 4개가 준비된 후 실행) -->
 <script src="app.js?v=2"></script>
 
-<!-- 5. ?ъ쭊 ?낅줈??珥덇린??(DOM 以鍮????ㅽ뻾) -->
+<!-- 5. 사진 업로드 초기화 (DOM 준비 후 실행) -->
 <script>
-  // ?섏씠吏 濡쒕뱶 ?꾨즺 ???ъ쭊 ?낅줈??湲곕뒫 珥덇린??
+  // 페이지 로드 완료 후 사진 업로드 기능 초기화
   document.addEventListener('DOMContentLoaded', initPhotoUpload);
 </script>
 
 </body>
 </html>
-
-
