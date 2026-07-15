@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initAuth();
   renderFavorites();
   attachFavoriteButton();
+
   
   renderHomeTab();     // 홈 탭 화면 그리기
 });
@@ -111,6 +112,10 @@ function initChloeChat() {
 }
 
 // ============================================================
+// 📱 탭 네비게이션 초기화
+// ============================================================
+
+// ============================================================
 // 🔐 로그인 및 즐겨찾기 로직 추가
 // ============================================================
 async function initAuth() {
@@ -121,7 +126,6 @@ async function initAuth() {
   const btnSignup = document.getElementById('btn-signup');
   if(!modal) return;
 
-  // 세션 확인
   const { session } = await ChloeDB.getSession();
   if (session) {
     modal.style.display = 'none';
@@ -190,9 +194,6 @@ function attachFavoriteButton() {
   }
 }
 
-// ============================================================
-// 📱 탭 네비게이션 초기화
-// ============================================================
 function initNavigation() {
   // 하단 네비게이션 버튼들을 모두 찾아서
   const navItems = document.querySelectorAll('.nav-item');
@@ -1047,8 +1048,7 @@ function renderDiaryContent() {
           <div class="nutrient-pills">
             <span class="nutrient-pill">🔥 ${meal.api_data.AMT_NUM1}kcal</span>
             <span class="nutrient-pill">💪 단백질 ${meal.api_data.AMT_NUM3}g</span>
-            <span class="nutrient-pill">🧈 지방 ${meal.api_data.AMT_NUM4}g</span>
-            <span class="nutrient-pill sugar-pill">🦴 당류 ${meal.api_data.AMT_NUM7}g</span>
+            <span class="nutrient-pill sugar-pill">🍬 당류 ${meal.api_data.AMT_NUM7}g</span>
           </div>
           <div style="display:flex;gap:4px;margin-top:6px">
             ${meal.stickers.map(s => `<span title="${s.label}">${s.emoji}</span>`).join('')}
