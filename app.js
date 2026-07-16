@@ -441,12 +441,12 @@ function initSearchTab() {
 
     if (unique.length > 0) {
       renderAutocomplete(unique); // 즉시 보여주기
+    } else {
+      hideAutocomplete(); // 캐시에 없으면 아무것도 안 보여줌
     }
 
-    // 500ms 후 공공 API도 추가 검색 (디바운스)
-    debounceTimer = setTimeout(() => {
-      performSearch(query, false);
-    }, 500);
+    // 사용자의 요청에 따라 타이핑 시 자동 API 검색 제거
+    // (엔터키 또는 검색 버튼 클릭 시에만 검색됨)
   });
 
   // ───────────────────────────────────────────────────────
