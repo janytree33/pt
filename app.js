@@ -1060,7 +1060,7 @@ function renderDiaryContent() {
             : '🍽️'}
         </div>
         <div class="diary-list-info">
-          <h4><span style="color: var(--primary-color); font-size: 13px; margin-right: 4px;">[${meal.meal_type || '식사'}]</span>${meal.food_name}</h4>
+          <h4><span onclick="editMealType('${appState.selectedCalDate}', '${meal.meal_id}', '${meal.meal_type || '식사'}')" style="color: var(--primary-color); font-size: 13px; margin-right: 4px; cursor: pointer; border-bottom: 1px dashed var(--primary-color);" title="클릭해서 식사 종류 변경">[${meal.meal_type || '식사'}]</span>${meal.food_name}</h4>
           <div class="nutrient-pills">
             <span class="nutrient-pill">🔥 ${meal.api_data.AMT_NUM1}kcal</span>
             <span class="nutrient-pill">💪 단백질 ${meal.api_data.AMT_NUM3}g</span>
@@ -1083,12 +1083,28 @@ function renderDiaryContent() {
             : '🍽️'}
         </div>
         <div class="diary-card-body">
-          <div class="diary-card-date">${meal.logged_at.slice(0,10)} · ${meal.meal_type || '식사'}</div>
+          <div class="diary-card-date">${meal.logged_at.slice(0,10)} · <span onclick="editMealType('${appState.selectedCalDate}', '${meal.meal_id}', '${meal.meal_type || '식사'}')" style="cursor:pointer; color:var(--primary-color); border-bottom:1px dashed var(--primary-color);" title="클릭해서 식사 종류 변경">${meal.meal_type || '식사'}</span></div>
           <div class="diary-card-food">${meal.food_name}</div>
           <div class="diary-card-stickers">${meal.stickers.map(s=>`<span class="diary-sticker">${s.emoji}</span>`).join('')}</div>
         </div>
       </div>
     `).join('')}</div>`;
+  }
+}
+
+/**
+ * 식사 종류 변경 모달/프롬프트
+ */
+function editMealType(dateStr, mealId, currentType) {
+  const newType = prompt(`새로운 식사 종류를 입력하세요 (예: 아침, 점심, 저녁, 아침간식 등)\n현재: ${currentType}`, currentType);
+  if (newType && newType.trim() !== '' && newType !== currentType) {
+    const result = ChloeData.updateMealType(dateStr, mealId, newType.trim());
+    if (result.success) {
+      showToast('식사 종류가 변경되었습니다.', 'success');
+      renderDiaryContent();
+    } else {
+      showToast('변경 실패: ' + result.error, 'error');
+    }
   }
 }
 
@@ -1400,22 +1416,10 @@ function renderBasket() {
         </div>
       `).join('')}
     </div>
-    
-    <!-- 🍽️ 식사 종류 선택 -->
-    <div style="margin-top:12px; display:flex; align-items:center; gap:8px;">
-      <span style="font-size:13px; font-weight:600; color:var(--gray-600);">🍽️ 식사 종류:</span>
-      <select id="basket-meal-type" style="flex:1; padding:8px; border-radius:6px; border:1px solid var(--gray-200); font-family:inherit;">
-        <option value="아침">아침</option>
-        <option value="점심" selected>점심</option>
-        <option value="저녁">저녁</option>
-        <option value="아침간식">아침간식</option>
-        <option value="점심간식">점심간식</option>
-        <option value="저녁간식">저녁간식</option>
-      </select>
     </div>
-
-    <button onclick="saveBasket()" class="btn-primary" style="width:100%; margin-top:12px;">
-      📝 ${appState.basket.length}가지 식단 한번에 기록하기
+    
+    <button onclick="evaluateBasket()" class="btn-primary" style="width:100%; margin-top:12px; background:var(--primary-color);">
+      ✨ ${appState.basket.length}가지 식단 조합 분석 및 기록하기
     </button>
     <button onclick="appState.basket=[]; renderBasket();" class="btn-secondary" style="width:100%; margin-top:6px; font-size:12px;">
       🗑️ 바스켓 비우기
@@ -1424,45 +1428,44 @@ function renderBasket() {
 }
 
 /**
- * 바스켓 전체를 한번에 먹기록에 저장
+ * 바스켓 전체를 하나의 음식으로 합쳐서 피드백 분석으로 넘기기
  */
-function saveBasket() {
+function evaluateBasket() {
   if (appState.basket.length === 0) return;
 
-  // 바스켓 전용 식사 종류 선택 드롭다운에서 값 가져오기
-  const mealType = document.getElementById('basket-meal-type')?.value || '식사';
-  const date = appState.selectedCalDate || getTodayStr();
-  let saved = 0;
+  // 모든 음식의 영양소 합산
+  const combinedFood = {
+    FOOD_NM_KR: appState.basket.length > 1 
+      ? `${appState.basket[0].FOOD_NM_KR} 외 ${appState.basket.length - 1}건` 
+      : appState.basket[0].FOOD_NM_KR,
+    AMT_NUM1: 0,
+    AMT_NUM3: 0,
+    AMT_NUM4: 0,
+    AMT_NUM7: 0,
+    AMT_NUM13: 0
+  };
 
   appState.basket.forEach(food => {
     const qty = food.qty || 1;
-    const scaledFood = { ...food };
-    
-    // 수량에 따른 영양소 스케일링
-    if (qty !== 1) {
-      scaledFood.AMT_NUM1 = Math.round((scaledFood.AMT_NUM1 || 0) * qty * 10) / 10;
-      scaledFood.AMT_NUM3 = Math.round((scaledFood.AMT_NUM3 || 0) * qty * 10) / 10;
-      scaledFood.AMT_NUM4 = Math.round((scaledFood.AMT_NUM4 || 0) * qty * 10) / 10;
-      scaledFood.AMT_NUM7 = Math.round((scaledFood.AMT_NUM7 || 0) * qty * 10) / 10;
-      scaledFood.AMT_NUM13 = Math.round((scaledFood.AMT_NUM13 || 0) * qty * 10) / 10;
-      scaledFood.FOOD_NM_KR = `${scaledFood.FOOD_NM_KR} (x${qty})`;
-    }
-
-    const mealData = {
-      ...scaledFood,
-      meal_type: mealType,
-      photo_base64: null,
-      note: ''
-    };
-
-    // stickers는 바스켓 특성상 자동 분석이 복잡하므로 빈 배열 또는 기본 스티커 넘김
-    ChloeData.addMealEntry(date, mealData, []);
-    saved++;
+    combinedFood.AMT_NUM1 += (food.AMT_NUM1 || 0) * qty;
+    combinedFood.AMT_NUM3 += (food.AMT_NUM3 || 0) * qty;
+    combinedFood.AMT_NUM4 += (food.AMT_NUM4 || 0) * qty;
+    combinedFood.AMT_NUM7 += (food.AMT_NUM7 || 0) * qty;
+    combinedFood.AMT_NUM13 += (food.AMT_NUM13 || 0) * qty;
   });
 
-  showToast(`✅ ${saved}가지 식단이 먹기록에 저장되었습니다!`, 'success');
+  // 소수점 1자리 정리
+  combinedFood.AMT_NUM1 = Math.round(combinedFood.AMT_NUM1 * 10) / 10;
+  combinedFood.AMT_NUM3 = Math.round(combinedFood.AMT_NUM3 * 10) / 10;
+  combinedFood.AMT_NUM4 = Math.round(combinedFood.AMT_NUM4 * 10) / 10;
+  combinedFood.AMT_NUM7 = Math.round(combinedFood.AMT_NUM7 * 10) / 10;
+  combinedFood.AMT_NUM13 = Math.round(combinedFood.AMT_NUM13 * 10) / 10;
+
+  // 바스켓 비우기
   appState.basket = [];
   renderBasket();
-  renderHomeTab();
-  document.getElementById('search-input').value = '';
+  document.getElementById('search-input').value = combinedFood.FOOD_NM_KR;
+
+  // 합쳐진 데이터를 피드백 패널로 전달하여 조언 생성
+  selectFood(combinedFood);
 }

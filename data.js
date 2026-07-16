@@ -227,6 +227,36 @@ function deleteMealEntry(dateStr, mealId) {
   }
 }
 
+function updateMealType(dateStr, mealId, newType) {
+  try {
+    const entries = getDiaryEntries();
+    const todayEntry = entries.find(e => e.date === dateStr);
+    if (!todayEntry) return { success: false, error: '해당 날짜 기록 없음' };
+    
+    const meal = todayEntry.meals.find(m => m.meal_id === mealId);
+    if (!meal) return { success: false, error: '해당 식단 없음' };
+    
+    meal.meal_type = newType;
+    
+    // 식사 순서 재정렬 (사용자가 임의 순서를 바꾸지 않았다면)
+    if (!todayEntry.is_custom_order) {
+      const MEAL_ORDER = { '아침': 1, '아침간식': 2, '점심': 3, '점심간식': 4, '저녁': 5, '저녁간식': 6 };
+      todayEntry.meals.sort((a, b) => {
+        const orderA = MEAL_ORDER[a.meal_type] || 99;
+        const orderB = MEAL_ORDER[b.meal_type] || 99;
+        if (orderA !== orderB) return orderA - orderB;
+        return new Date(a.logged_at) - new Date(b.logged_at);
+      });
+    }
+    
+    localStorage.setItem(STORAGE_KEYS.DIARY, JSON.stringify(entries));
+    saveDiaryToCloud(dateStr, todayEntry);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}
+
 function updateMealOrder(dateStr, mealIds) {
   try {
     const entries = getDiaryEntries();
@@ -373,7 +403,7 @@ function clearAllData() {
 // ============================================================
 window.ChloeData = {
   saveUserProfile, getUserProfile, updateGoal,
-  getDiaryEntries, getDiaryByDate, addMealEntry, deleteMealEntry, updateMealOrder,
+  getDiaryEntries, getDiaryByDate, addMealEntry, deleteMealEntry, updateMealType, updateMealOrder,
   getFavorites, saveFavorite, removeFavorite, // 즐겨찾기 API 추가
   getSearchHistory, saveSearchHistory, deleteSearchHistory,
   clearAllData, generateUUID,
