@@ -122,6 +122,25 @@ window.ChloeDB = {
     return { data: this.decryptData(data.encrypted_data), error: null };
   },
 
+  /** 특정 기간(예: 연도, 월)의 먹기록 모두 불러오기 */
+  getDiariesByMonth: async function(userId, prefix) {
+    const { data, error } = await _supabaseClient
+      .from('diaries')
+      .select('date_str, encrypted_data')
+      .eq('user_id', userId)
+      .like('date_str', `${prefix}%`)
+      .order('date_str', { ascending: false });
+
+    if (error || !data) return { data: [], error };
+
+    const diaries = data.map(item => ({
+      date_str: item.date_str,
+      diaryData: this.decryptData(item.encrypted_data)
+    })).filter(d => d.diaryData !== null); // 복호화 실패한 데이터는 제외
+
+    return { data: diaries, error: null };
+  },
+
   /** 즐겨찾기 저장 */
   saveFavorite: async function(userId, favoriteData) {
     const encrypted = this.encryptData(favoriteData);
