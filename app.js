@@ -579,7 +579,10 @@ function renderAutocomplete(items) {
       <span style="font-size:18px">${icon}</span>
       <span class="food-name">${item.FOOD_NM_KR}</span>
       <span class="food-cal">${item.AMT_NUM1}kcal</span>
-      <button class="basket-add-btn" style="margin-left:auto; padding:2px 8px; font-size:11px; border-radius:4px; border:1px solid var(--primary-color); color:var(--primary-color); background:transparent; cursor:pointer;" onclick="event.stopPropagation(); addToBasket(${JSON.stringify(item).replace(/"/g, '&quot;')})">+담기</button>
+      <div style="margin-left:auto; display:flex; gap:4px;">
+        ${item._fromFav ? `<button class="basket-add-btn" style="padding:2px 8px; font-size:11px; border-radius:4px; border:1px solid #FFD700; color:#B8860B; background:#FFFBE6; cursor:pointer; font-weight:600;" onclick="event.stopPropagation(); quickRecordFood(${JSON.stringify(item).replace(/"/g, '&quot;')})">바로 기록</button>` : ''}
+        <button class="basket-add-btn" style="padding:2px 8px; font-size:11px; border-radius:4px; border:1px solid var(--primary-color); color:var(--primary-color); background:transparent; cursor:pointer;" onclick="event.stopPropagation(); addToBasket(${JSON.stringify(item).replace(/"/g, '&quot;')})">+담기</button>
+      </div>
     `;
     
     // 음식 선택 시 피드백 표시
@@ -860,6 +863,43 @@ function saveCurrentFavorite() {
 // ============================================================
 // 📖 먹기록 탭 초기화 및 렌더링
 // ============================================================
+
+/**
+ * 즐겨찾기 항목을 검색 리스트에서 즉시 기록
+ */
+function quickRecordFood(foodItem) {
+  const profile = ChloeData.getUserProfile();
+  const feedback = ChloeFeedback.generateFeedback(foodItem, profile.goals);
+  
+  const mealData = {
+    ...foodItem,
+    meal_type: '식사', // 기본값으로 식사 지정 (나중에 다이어리 탭에서 수정 가능)
+    photo_base64: null,
+    note: ''
+  };
+  
+  const result = ChloeData.addMealEntry(
+    getTodayStr(),
+    mealData,
+    feedback.stickers
+  );
+  
+  if (result.success) {
+    showToast('🎉 즐겨찾기 바로 기록 완료!', 'success');
+    
+    // UI 초기화
+    document.getElementById('search-input').value = '';
+    document.getElementById('feedback-panel')?.classList.remove('visible');
+    hideAutocomplete();
+    
+    // 통계 및 먹기록 탭 갱신
+    renderDiaryTab();
+    renderHomeTab();
+  } else {
+    showToast('저장에 실패했어요.', 'error');
+  }
+}
+
 function initDiaryTab() {
   // 보기 모드 토글 버튼
   document.getElementById('view-list-btn')?.addEventListener('click', () => {
