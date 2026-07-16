@@ -743,6 +743,8 @@ function renderFeedbackPanel(nutrition, feedback) {
  * 최근 검색어 태그 렌더링
  */
 function renderRecentSearches() {
+  renderFavoriteTags(); // 즐겨찾기도 같이 렌더링
+  
   const history = ChloeData.getSearchHistory();
   const container = document.getElementById('recent-searches');
   if (!container) return;
@@ -761,6 +763,31 @@ function renderRecentSearches() {
          <button onclick="deleteRecentSearch('${keyword}', event)" style="position:absolute; right:6px; background:none; border:none; font-size:12px; color:var(--coral); cursor:pointer; padding:2px; display:flex; align-items:center; justify-content:center;">✕</button>
        </div>`
     ).join('');
+  }
+}
+
+/**
+ * 즐겨찾기 태그 렌더링
+ */
+function renderFavoriteTags() {
+  const favorites = ChloeData.getFavorites();
+  const container = document.getElementById('favorite-tags-container');
+  if (!container) return;
+  
+  if (favorites.length === 0) {
+    container.style.display = 'none';
+    return;
+  }
+  
+  container.style.display = 'block';
+  const tagsEl = container.querySelector('.tags-row');
+  if (tagsEl) {
+    tagsEl.innerHTML = favorites.map(fav => {
+      // json 문자열로 변환 후 따옴표 처리
+      const favStr = JSON.stringify(fav.favoriteData).replace(/"/g, '&quot;');
+      const name = fav.favoriteData.FOOD_NM_KR;
+      return `<button class="tag-btn" style="border-color:#FFD700; background:#FFFBE6; color:#B8860B; margin-right:8px; margin-bottom:8px;" onclick="quickRecordFood(${favStr})">⭐ ${name}</button>`;
+    }).join('');
   }
 }
 

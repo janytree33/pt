@@ -216,6 +216,12 @@
         <p class="loading-message">클로이가 영양 데이터 찾는 중...</p>
       </div>
 
+      <!-- 즐겨찾기 빠른 기록 태그 -->
+      <div class="recent-searches" id="favorite-tags-container" style="display:none; margin-bottom: 12px;">
+        <div class="recent-title">⭐ 내 즐겨찾기 (클릭 시 바로 기록)</div>
+        <div class="tags-row" id="favorite-tags"></div>
+      </div>
+
       <!-- 최근 검색어 태그 -->
       <div class="recent-searches" id="recent-searches" style="display:none">
         <div class="recent-title">🕐 최근 검색</div>
@@ -592,7 +598,7 @@
 <!-- 4. ✨ Gemini AI 폴백 모듈 (api.js 다음에 위치!) -->
 <script src="gemini.js?v=13"></script>
 <!-- 5. 메인 앱 로직 (위 4개가 준비된 후 실행) -->
-<script src="app.js?v=14"></script>
+<script src="app.js?v=15"></script>
 
 <!-- 5. 사진 업로드 초기화 (DOM 준비 후 실행) -->
 <script>
