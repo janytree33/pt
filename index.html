@@ -171,6 +171,9 @@
       </div>
 
       <!-- 검색창 + 자동완성 드롭다운 -->
+      <!-- 🛒 식단 바스켓 현황 -->
+      <div id="meal-basket" style="display:none;"></div>
+
       <div class="search-wrapper" id="search-wrapper">
         <!-- 📷 사진 첨부 버튼 -->
         <label for="image-upload" class="image-upload-btn" title="영양성분표 사진 첨부">📷</label>
@@ -346,6 +349,16 @@
         </div>
 
         <!-- 기록하기 버튼 -->
+        <!-- 🛒 바스켓에 담기 버튼 -->
+        <button
+          id="btn-add-basket"
+          class="btn-secondary"
+          style="width:100%; margin-bottom:8px; background:var(--mint-light); border-color:var(--primary-color); color:var(--primary-color); font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px;"
+          onclick="if(appState.selectedFood){ addToBasket(appState.selectedFood); document.getElementById('feedback-panel').classList.remove('visible'); document.getElementById('search-input').value=''; }"
+        >
+          🛒 바스켓에 담기 (여러 음식 한번에 기록할 때)
+        </button>
+
         <button class="btn-primary" id="save-meal-btn" onclick="saveCurrentMeal()">
           ✅ 클로이에게 기록 맡기기!
         </button>
