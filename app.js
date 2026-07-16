@@ -22,7 +22,8 @@ let appState = {
   calendarYear: new Date().getFullYear(),
   calendarMonth: new Date().getMonth(),
   currentBase64Image: null,     // 첨부된 사진 (Base64)
-  chatHistory: []               // 클로이와의 대화 내역
+  chatHistory: [],              // 클로이와의 대화 내역
+  basket: []                    // 🛒 식단 바스켓 (여러 음식 담기)
 };
 
 // 오늘 날짜를 'YYYY-MM-DD' 형식으로 반환
@@ -429,7 +430,20 @@ function initSearchTab() {
       return;
     }
 
-    // 디바운스: 500ms 이후 자동완성 전용 검색 (isExplicit = false → 히스토리 미저장)
+    // ⚡ 즉시: 캐시 + 즐겨찾기에서 먼저 검색 (API 호출 없이 순간 표시)
+    const cached = ChloeAPI.searchCache ? ChloeAPI.searchCache(query) : [];
+    const favs = ChloeData.getFavorites ? ChloeData.getFavorites() : [];
+    const favMatched = favs.filter(f => f.FOOD_NM_KR && f.FOOD_NM_KR.includes(query));
+    const instant = [...favMatched.map(f => ({ ...f, _fromFav: true })), ...cached];
+    const unique = instant.filter((item, idx, arr) =>
+      arr.findIndex(a => a.FOOD_NM_KR === item.FOOD_NM_KR) === idx
+    ).slice(0, 5);
+
+    if (unique.length > 0) {
+      renderAutocomplete(unique); // 즉시 보여주기
+    }
+
+    // 500ms 후 공공 API도 추가 검색 (디바운스)
     debounceTimer = setTimeout(() => {
       performSearch(query, false);
     }, 500);
@@ -560,10 +574,12 @@ function renderAutocomplete(items) {
   items.forEach(item => {
     const el = document.createElement('div');
     el.className = 'autocomplete-item';
+    const icon = item._fromFav ? '⭐' : '🍽️';
     el.innerHTML = `
-      <span style="font-size:18px">🍽️</span>
+      <span style="font-size:18px">${icon}</span>
       <span class="food-name">${item.FOOD_NM_KR}</span>
       <span class="food-cal">${item.AMT_NUM1}kcal</span>
+      <button class="basket-add-btn" style="margin-left:auto; padding:2px 8px; font-size:11px; border-radius:4px; border:1px solid var(--primary-color); color:var(--primary-color); background:transparent; cursor:pointer;" onclick="event.stopPropagation(); addToBasket(${JSON.stringify(item).replace(/"/g, '&quot;')})">+담기</button>
     `;
     
     // 음식 선택 시 피드백 표시
@@ -1307,3 +1323,123 @@ window.saveCurrentMeal = saveCurrentMeal;
 window.deleteMeal = deleteMeal;
 window.quickSearch = quickSearch;
 window.initPhotoUpload = initPhotoUpload;
+window.addToBasket = addToBasket;
+window.removeFromBasket = removeFromBasket;
+window.saveBasket = saveBasket;
+
+// ============================================================
+// 🛒 식단 바스켓 - 여러 음식을 한번에 담아서 기록
+// ============================================================
+
+/**
+ * 음식을 바스켓에 담기
+ * @param {Object} food - 음식 데이터
+ */
+function addToBasket(food) {
+  // 이미 담겨있으면 스킵
+  if (appState.basket.find(b => b.FOOD_NM_KR === food.FOOD_NM_KR)) {
+    showToast(`"${food.FOOD_NM_KR}"은 이미 바스켓에 있어요!`, 'info');
+    return;
+  }
+  appState.basket.push({ ...food, qty: 1 });
+  renderBasket();
+  showToast(`🛒 "${food.FOOD_NM_KR}" 바스켓에 담았습니다!`, 'success');
+}
+
+/**
+ * 바스켓에서 음식 제거
+ * @param {number} idx - 제거할 인덱스
+ */
+function removeFromBasket(idx) {
+  appState.basket.splice(idx, 1);
+  renderBasket();
+}
+
+/**
+ * 바스켓 UI 렌더링
+ */
+function renderBasket() {
+  let basketEl = document.getElementById('meal-basket');
+
+  // 바스켓 UI가 없으면 동적으로 생성
+  if (!basketEl) {
+    const feedbackPanel = document.getElementById('feedback-panel');
+    if (!feedbackPanel) return;
+
+    basketEl = document.createElement('div');
+    basketEl.id = 'meal-basket';
+    basketEl.style.cssText = 'background:var(--white); border-radius:12px; padding:16px; margin-bottom:12px; border:2px dashed var(--primary-color);';
+    feedbackPanel.insertBefore(basketEl, feedbackPanel.firstChild);
+  }
+
+  if (appState.basket.length === 0) {
+    basketEl.style.display = 'none';
+    return;
+  }
+
+  basketEl.style.display = 'block';
+
+  const totalCal = appState.basket.reduce((sum, b) => sum + (b.AMT_NUM1 || 0) * (b.qty || 1), 0).toFixed(0);
+  const totalProtein = appState.basket.reduce((sum, b) => sum + (b.AMT_NUM3 || 0) * (b.qty || 1), 0).toFixed(1);
+
+  basketEl.innerHTML = `
+    <div style="font-weight:700; color:var(--primary-color); margin-bottom:10px;">
+      🛒 식단 바스켓 (${appState.basket.length}개) · 합계 ${totalCal}kcal · 단백질 ${totalProtein}g
+    </div>
+    <div id="basket-items">
+      ${appState.basket.map((b, idx) => `
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--gray-100);">
+          <span style="font-size:13px;">${b.FOOD_NM_KR}</span>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <input type="number" value="${b.qty}" min="0.5" step="0.5"
+              style="width:50px; padding:4px; border-radius:6px; border:1px solid var(--gray-200); text-align:center; font-size:12px;"
+              onchange="appState.basket[${idx}].qty = parseFloat(this.value) || 1; renderBasket();">
+            <span style="font-size:11px; color:var(--gray-500);">${((b.AMT_NUM1 || 0) * (b.qty || 1)).toFixed(0)}kcal</span>
+            <button onclick="removeFromBasket(${idx})" style="background:none; border:none; color:var(--gray-400); cursor:pointer; font-size:16px;">✕</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    <button onclick="saveBasket()" class="btn-primary" style="width:100%; margin-top:12px;">
+      📝 ${appState.basket.length}가지 식단 한번에 기록하기
+    </button>
+    <button onclick="appState.basket=[]; renderBasket();" class="btn-secondary" style="width:100%; margin-top:6px; font-size:12px;">
+      🗑️ 바스켓 비우기
+    </button>
+  `;
+}
+
+/**
+ * 바스켓 전체를 한번에 먹기록에 저장
+ */
+function saveBasket() {
+  if (appState.basket.length === 0) return;
+
+  const mealType = document.getElementById('meal-type-select')?.value || '식사';
+  const date = appState.selectedCalDate || getTodayStr();
+  let saved = 0;
+
+  appState.basket.forEach(food => {
+    const qty = food.qty || 1;
+    const mealEntry = {
+      foodName: food.FOOD_NM_KR,
+      calories: Math.round((food.AMT_NUM1 || 0) * qty),
+      protein:  Math.round((food.AMT_NUM3 || 0) * qty * 10) / 10,
+      fat:      Math.round((food.AMT_NUM4 || 0) * qty * 10) / 10,
+      sugar:    Math.round((food.AMT_NUM7 || 0) * qty * 10) / 10,
+      sodium:   Math.round((food.AMT_NUM13 || 0) * qty),
+      mealType: mealType,
+      quantity: qty,
+      timestamp: new Date().toISOString(),
+      memo: ''
+    };
+    ChloeData.addMeal(date, mealEntry);
+    saved++;
+  });
+
+  showToast(`✅ ${saved}가지 식단이 먹기록에 저장되었습니다!`, 'success');
+  appState.basket = [];
+  renderBasket();
+  renderHomeTab();
+  document.getElementById('search-input').value = '';
+}
