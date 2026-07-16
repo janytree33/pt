@@ -1400,6 +1400,20 @@ function renderBasket() {
         </div>
       `).join('')}
     </div>
+    
+    <!-- 🍽️ 식사 종류 선택 -->
+    <div style="margin-top:12px; display:flex; align-items:center; gap:8px;">
+      <span style="font-size:13px; font-weight:600; color:var(--gray-600);">🍽️ 식사 종류:</span>
+      <select id="basket-meal-type" style="flex:1; padding:8px; border-radius:6px; border:1px solid var(--gray-200); font-family:inherit;">
+        <option value="아침">아침</option>
+        <option value="점심" selected>점심</option>
+        <option value="저녁">저녁</option>
+        <option value="아침간식">아침간식</option>
+        <option value="점심간식">점심간식</option>
+        <option value="저녁간식">저녁간식</option>
+      </select>
+    </div>
+
     <button onclick="saveBasket()" class="btn-primary" style="width:100%; margin-top:12px;">
       📝 ${appState.basket.length}가지 식단 한번에 기록하기
     </button>
@@ -1415,7 +1429,8 @@ function renderBasket() {
 function saveBasket() {
   if (appState.basket.length === 0) return;
 
-  const mealType = document.getElementById('meal-type-select')?.value || '식사';
+  // 바스켓 전용 식사 종류 선택 드롭다운에서 값 가져오기
+  const mealType = document.getElementById('basket-meal-type')?.value || '식사';
   const date = appState.selectedCalDate || getTodayStr();
   let saved = 0;
 
