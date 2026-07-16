@@ -1436,19 +1436,27 @@ function saveBasket() {
 
   appState.basket.forEach(food => {
     const qty = food.qty || 1;
-    const mealEntry = {
-      foodName: food.FOOD_NM_KR,
-      calories: Math.round((food.AMT_NUM1 || 0) * qty),
-      protein:  Math.round((food.AMT_NUM3 || 0) * qty * 10) / 10,
-      fat:      Math.round((food.AMT_NUM4 || 0) * qty * 10) / 10,
-      sugar:    Math.round((food.AMT_NUM7 || 0) * qty * 10) / 10,
-      sodium:   Math.round((food.AMT_NUM13 || 0) * qty),
-      mealType: mealType,
-      quantity: qty,
-      timestamp: new Date().toISOString(),
-      memo: ''
+    const scaledFood = { ...food };
+    
+    // 수량에 따른 영양소 스케일링
+    if (qty !== 1) {
+      scaledFood.AMT_NUM1 = Math.round((scaledFood.AMT_NUM1 || 0) * qty * 10) / 10;
+      scaledFood.AMT_NUM3 = Math.round((scaledFood.AMT_NUM3 || 0) * qty * 10) / 10;
+      scaledFood.AMT_NUM4 = Math.round((scaledFood.AMT_NUM4 || 0) * qty * 10) / 10;
+      scaledFood.AMT_NUM7 = Math.round((scaledFood.AMT_NUM7 || 0) * qty * 10) / 10;
+      scaledFood.AMT_NUM13 = Math.round((scaledFood.AMT_NUM13 || 0) * qty * 10) / 10;
+      scaledFood.FOOD_NM_KR = `${scaledFood.FOOD_NM_KR} (x${qty})`;
+    }
+
+    const mealData = {
+      ...scaledFood,
+      meal_type: mealType,
+      photo_base64: null,
+      note: ''
     };
-    ChloeData.addMeal(date, mealEntry);
+
+    // stickers는 바스켓 특성상 자동 분석이 복잡하므로 빈 배열 또는 기본 스티커 넘김
+    ChloeData.addMealEntry(date, mealData, []);
     saved++;
   });
 
