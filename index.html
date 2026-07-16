@@ -362,6 +362,9 @@
         <button class="btn-primary" id="save-meal-btn" onclick="saveCurrentMeal()">
           ✅ 클로이에게 기록 맡기기!
         </button>
+        <button class="btn-secondary" style="width:100%; margin-top:8px; border-color:#FFD700; color:#B8860B; font-weight:600;" onclick="if(appState.selectedFood){ saveCurrentFavorite(); }">
+          ⭐ 이 식단/조합을 즐겨찾기에 추가
+        </button>
         <button class="btn-secondary" onclick="document.getElementById('feedback-panel').classList.remove('visible');appState.selectedFood=null;">
           다시 검색하기
         </button>
@@ -575,7 +578,7 @@
 <!-- 4. ✨ Gemini AI 폴백 모듈 (api.js 다음에 위치!) -->
 <script src="gemini.js?v=5"></script>
 <!-- 5. 메인 앱 로직 (위 4개가 준비된 후 실행) -->
-<script src="app.js?v=9"></script>
+<script src="app.js?v=10"></script>
 
 <!-- 5. 사진 업로드 초기화 (DOM 준비 후 실행) -->
 <script>

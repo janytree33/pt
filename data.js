@@ -179,7 +179,8 @@ function addMealEntry(dateStr, mealData, stickers = []) {
         AMT_NUM3: parseFloat(mealData.AMT_NUM3) || 0,
         AMT_NUM4: parseFloat(mealData.AMT_NUM4) || 0,
         AMT_NUM7: parseFloat(mealData.AMT_NUM7) || 0,
-        AMT_NUM13: parseFloat(mealData.AMT_NUM13) || 0
+        AMT_NUM13: parseFloat(mealData.AMT_NUM13) || 0,
+        _basketItems: mealData._basketItems || null // 바스켓 병합 데이터 보존
       },
       logged_at: new Date().toISOString(),
       photo_base64: mealData.photo_base64 || null,

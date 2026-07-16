@@ -1069,6 +1069,21 @@ function renderDiaryContent() {
           <div style="display:flex;gap:4px;margin-top:6px">
             ${meal.stickers.map(s => `<span title="${s.label}">${s.emoji}</span>`).join('')}
           </div>
+          ${meal.api_data._basketItems ? `
+            <div style="margin-top: 8px;">
+              <button onclick="const el = document.getElementById('basket-details-${meal.meal_id}'); el.style.display = el.style.display === 'none' ? 'block' : 'none';" style="background:none; border:none; color:var(--gray-500); font-size:11px; cursor:pointer; padding:0; border-bottom:1px solid var(--gray-300);">
+                세부내역 보기 ▾
+              </button>
+              <div id="basket-details-${meal.meal_id}" style="display:none; margin-top:6px; padding:8px; background:var(--gray-50); border-radius:6px; font-size:11px; color:var(--gray-600);">
+                ${meal.api_data._basketItems.map(b => `
+                  <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span>- ${b.FOOD_NM_KR} (x${b.qty || 1})</span>
+                    <span>${Math.round((b.AMT_NUM1 || 0) * (b.qty || 1))}kcal</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
         </div>
         <button class="diary-delete-btn" onclick="deleteMeal('${appState.selectedCalDate}','${meal.meal_id}')">✕</button>
       </div>
@@ -1086,6 +1101,21 @@ function renderDiaryContent() {
           <div class="diary-card-date">${meal.logged_at.slice(0,10)} · <span onclick="editMealType('${appState.selectedCalDate}', '${meal.meal_id}', '${meal.meal_type || '식사'}')" style="cursor:pointer; color:var(--primary-color); border-bottom:1px dashed var(--primary-color);" title="클릭해서 식사 종류 변경">${meal.meal_type || '식사'}</span></div>
           <div class="diary-card-food">${meal.food_name}</div>
           <div class="diary-card-stickers">${meal.stickers.map(s=>`<span class="diary-sticker">${s.emoji}</span>`).join('')}</div>
+          ${meal.api_data._basketItems ? `
+            <div style="margin-top:6px; font-size:10px; color:var(--gray-500);">
+              <button onclick="const el = document.getElementById('basket-details-grid-${meal.meal_id}'); el.style.display = el.style.display === 'none' ? 'block' : 'none';" style="background:none; border:none; color:var(--gray-500); cursor:pointer; padding:0; border-bottom:1px solid var(--gray-300);">
+                세부내역 보기 ▾
+              </button>
+              <div id="basket-details-grid-${meal.meal_id}" style="display:none; margin-top:4px; padding:6px; background:var(--gray-50); border-radius:4px; text-align:left;">
+                ${meal.api_data._basketItems.map(b => `
+                  <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+                    <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:80px;">- ${b.FOOD_NM_KR}</span>
+                    <span>${b.qty || 1}개</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
         </div>
       </div>
     `).join('')}</div>`;
@@ -1442,7 +1472,8 @@ function evaluateBasket() {
     AMT_NUM3: 0,
     AMT_NUM4: 0,
     AMT_NUM7: 0,
-    AMT_NUM13: 0
+    AMT_NUM13: 0,
+    _basketItems: JSON.parse(JSON.stringify(appState.basket)) // 개별 아이템 데이터 보존
   };
 
   appState.basket.forEach(food => {
