@@ -892,15 +892,35 @@ function saveCurrentFavorite() {
 // ============================================================
 
 /**
- * 즐겨찾기 항목을 검색 리스트에서 즉시 기록
+ * 즐겨찾기 항목을 검색 리스트에서 즉시 기록하기 전 임시 저장 및 모달 표시
  */
+let tempQuickRecordFood = null;
+
 function quickRecordFood(foodItem) {
+  tempQuickRecordFood = foodItem;
+  const modal = document.getElementById('quick-record-modal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeQuickRecordModal() {
+  tempQuickRecordFood = null;
+  const modal = document.getElementById('quick-record-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+/**
+ * 모달에서 선택한 시간대로 실제 기록 실행
+ */
+window.executeQuickRecord = function(mealType) {
+  if (!tempQuickRecordFood) return;
+  
+  const foodItem = tempQuickRecordFood;
   const profile = ChloeData.getUserProfile();
   const feedback = ChloeFeedback.generateFeedback(foodItem, profile.goals);
   
   const mealData = {
     ...foodItem,
-    meal_type: '식사', // 기본값으로 식사 지정 (나중에 다이어리 탭에서 수정 가능)
+    meal_type: mealType,
     photo_base64: null,
     note: ''
   };
@@ -912,7 +932,7 @@ function quickRecordFood(foodItem) {
   );
   
   if (result.success) {
-    showToast('🎉 즐겨찾기 바로 기록 완료!', 'success');
+    showToast(`🎉 [${mealType}] 기록 완료!`, 'success');
     
     // UI 초기화
     document.getElementById('search-input').value = '';
@@ -925,7 +945,9 @@ function quickRecordFood(foodItem) {
   } else {
     showToast('저장에 실패했어요.', 'error');
   }
-}
+  
+  closeQuickRecordModal();
+};
 
 function initDiaryTab() {
   // 보기 모드 토글 버튼

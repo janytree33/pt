@@ -577,6 +577,22 @@
     </button>
   </nav>
 
+  <!-- 바로 기록 식사 시간대 모달 -->
+  <div id="quick-record-modal" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; justify-content:center; align-items:center;">
+    <div style="background:#fff; width:90%; max-width:320px; border-radius:12px; padding:20px; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+      <h3 style="margin-top:0; margin-bottom:16px; font-size:16px; color:var(--text-color); text-align:center;">어느 시간대에 드셨나요?</h3>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px;">
+        <button class="btn-secondary" style="padding:10px; font-size:14px;" onclick="executeQuickRecord('아침')">아침</button>
+        <button class="btn-secondary" style="padding:10px; font-size:14px;" onclick="executeQuickRecord('아침간식')">아침 간식</button>
+        <button class="btn-secondary" style="padding:10px; font-size:14px;" onclick="executeQuickRecord('점심')">점심</button>
+        <button class="btn-secondary" style="padding:10px; font-size:14px;" onclick="executeQuickRecord('점심간식')">점심 간식</button>
+        <button class="btn-secondary" style="padding:10px; font-size:14px;" onclick="executeQuickRecord('저녁')">저녁</button>
+        <button class="btn-secondary" style="padding:10px; font-size:14px;" onclick="executeQuickRecord('저녁간식')">저녁 간식</button>
+      </div>
+      <button class="btn-secondary" style="width:100%; border-color:#ccc; color:#666;" onclick="closeQuickRecordModal()">취소</button>
+    </div>
+  </div>
+
   <!-- 🔔 토스트 알림 컨테이너 -->
   <div class="toast-container" id="toast-container"></div>
 
@@ -598,7 +614,7 @@
 <!-- 4. ✨ Gemini AI 폴백 모듈 (api.js 다음에 위치!) -->
 <script src="gemini.js?v=13"></script>
 <!-- 5. 메인 앱 로직 (위 4개가 준비된 후 실행) -->
-<script src="app.js?v=16"></script>
+<script src="app.js?v=17"></script>
 
 <!-- 5. 사진 업로드 초기화 (DOM 준비 후 실행) -->
 <script>
