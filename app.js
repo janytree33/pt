@@ -784,8 +784,8 @@ function renderFavoriteTags() {
   if (tagsEl) {
     tagsEl.innerHTML = favorites.map(fav => {
       // json 문자열로 변환 후 따옴표 처리
-      const favStr = JSON.stringify(fav.favoriteData).replace(/"/g, '&quot;');
-      const name = fav.favoriteData.FOOD_NM_KR;
+      const favStr = JSON.stringify(fav).replace(/"/g, '&quot;');
+      const name = fav.FOOD_NM_KR || '이름 없음';
       return `<button class="tag-btn" style="border-color:#FFD700; background:#FFFBE6; color:#B8860B; margin-right:8px; margin-bottom:8px;" onclick="quickRecordFood(${favStr})">⭐ ${name}</button>`;
     }).join('');
   }
