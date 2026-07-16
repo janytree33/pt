@@ -1183,18 +1183,38 @@ function renderStatsTab() {
   
   // 평균 수치 표시
   setEl('avg-sugar', avgSugar.toFixed(1));
-  setEl('avg-sugar-bar', avgSugar.toFixed(1));
   setEl('avg-protein', avgProtein.toFixed(1));
-  setEl('avg-protein-bar', avgProtein.toFixed(1));
   setEl('avg-calories', Math.round(avgCalories));
-  setEl('avg-cal-bar', Math.round(avgCalories));
   
-  // 당류 진행 바 (하루 권장 50g 기준)
-  updateStatBar('sugar-bar', avgSugar, 50, true);
-  // 단백질 진행 바 (하루 목표 60g 기준)
-  updateStatBar('protein-bar', avgProtein, 60, false);
-  // 칼로리 진행 바 (하루 목표 2000kcal 기준)
-  updateStatBar('calories-bar', avgCalories, 2000, false);
+  // 🎯 달성률 계산 (기록이 존재하는 날짜 기준)
+  const validEntries = weekEntries.filter(e => e && e.meals && e.meals.length > 0);
+  const totalDays = validEntries.length;
+  
+  let sugarSuccess = 0;
+  let proteinSuccess = 0;
+  let calSuccess = 0;
+  
+  validEntries.forEach(e => {
+    // 목표 기준치 통과 여부 확인
+    if (e.daily_totals.sugar <= 50) sugarSuccess++;
+    if (e.daily_totals.protein >= 60) proteinSuccess++;
+    if (e.daily_totals.calories > 0 && e.daily_totals.calories <= 2000) calSuccess++;
+  });
+  
+  // 화면에 텍스트 업데이트 (N일 / M일)
+  document.querySelectorAll('.total-record-days').forEach(el => el.textContent = totalDays);
+  setEl('sugar-success-days', sugarSuccess);
+  setEl('protein-success-days', proteinSuccess);
+  setEl('cal-success-days', calSuccess);
+  
+  // 퍼센테이지 계산 후 바 업데이트 (성공률이므로 모두 isReverse=false)
+  const sugarRate = totalDays > 0 ? (sugarSuccess / totalDays) * 100 : 0;
+  const proteinRate = totalDays > 0 ? (proteinSuccess / totalDays) * 100 : 0;
+  const calRate = totalDays > 0 ? (calSuccess / totalDays) * 100 : 0;
+  
+  updateStatBar('sugar-bar', sugarRate, 100, false);
+  updateStatBar('protein-bar', proteinRate, 100, false);
+  updateStatBar('calories-bar', calRate, 100, false);
   
   // 주간 스티커 갤러리 렌더링
   renderWeeklyStickers(last7Days, weekEntries);

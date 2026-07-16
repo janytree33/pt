@@ -481,13 +481,13 @@
 
       <!-- 영양소 진행 바 -->
       <div class="card">
-        <div class="card-title">🎯 목표 달성률</div>
+        <div class="card-title">🎯 목표 달성률 (식단 기록일 기준)</div>
         
-        <!-- 당류 바 (초과 시 붉은색) -->
+        <!-- 당류 바 -->
         <div class="stat-bar-wrap">
           <div class="stat-bar-header">
-            <span class="stat-bar-label">🍬 당류 (권장 50g 이하)</span>
-            <span class="stat-bar-value"><span id="avg-sugar-bar">0</span>g</span>
+            <span class="stat-bar-label">🍬 당류 방어 성공 (50g 이하)</span>
+            <span class="stat-bar-value"><span id="sugar-success-days">0</span>일 / <span class="total-record-days">0</span>일</span>
           </div>
           <div class="stat-bar-track">
             <div class="stat-bar-fill" id="sugar-bar" style="width:0%"></div>
@@ -497,8 +497,8 @@
         <!-- 단백질 바 -->
         <div class="stat-bar-wrap">
           <div class="stat-bar-header">
-            <span class="stat-bar-label">💪 단백질 (목표 60g)</span>
-            <span class="stat-bar-value"><span id="avg-protein-bar">0</span>g</span>
+            <span class="stat-bar-label">💪 단백질 목표 달성 (60g 이상)</span>
+            <span class="stat-bar-value"><span id="protein-success-days">0</span>일 / <span class="total-record-days">0</span>일</span>
           </div>
           <div class="stat-bar-track">
             <div class="stat-bar-fill" id="protein-bar" style="width:0%"></div>
@@ -508,8 +508,8 @@
         <!-- 칼로리 바 -->
         <div class="stat-bar-wrap">
           <div class="stat-bar-header">
-            <span class="stat-bar-label">🔥 칼로리 (목표 2000kcal)</span>
-            <span class="stat-bar-value"><span id="avg-cal-bar">0</span>kcal</span>
+            <span class="stat-bar-label">🔥 칼로리 조절 성공 (2000kcal 이하)</span>
+            <span class="stat-bar-value"><span id="cal-success-days">0</span>일 / <span class="total-record-days">0</span>일</span>
           </div>
           <div class="stat-bar-track">
             <div class="stat-bar-fill" id="calories-bar" style="width:0%"></div>
@@ -520,7 +520,21 @@
       <!-- 주간 스티커 갤러리 -->
       <div class="card">
         <div class="card-title">🏅 이번 주 스티커 현황</div>
-        <div class="sticker-gallery" id="weekly-stickers"></div>
+        <div class="sticker-grid" id="weekly-stickers">
+          <!-- JS에서 요일별로 렌더링됨 -->
+        </div>
+        
+        <!-- 스티커 획득 가이드 -->
+        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--gray-200);">
+          <div style="font-size: 12px; font-weight: 600; color: var(--gray-600); margin-bottom: 8px;">💡 어떻게 하면 스티커를 받나요?</div>
+          <div style="font-size: 11px; color: var(--gray-500); line-height: 1.6; display: flex; flex-direction: column; gap: 4px;">
+            <div>🥗 <strong>당류 방어 성공</strong>: 한 끼 당류 10g 이하 유지 시</div>
+            <div>💪 <strong>단백질 충전 완료</strong>: 한 끼 단백질 20g 이상 섭취 시</div>
+            <div>🎯 <strong>칼로리 조절 굿</strong>: 한 끼 칼로리 600kcal 이하 유지 시</div>
+            <div>🏆 <strong>스파르타 완벽 통과</strong>: 스파르타 모드 활성화 및 엄격한 기준 통과 시</div>
+            <div>⚠️ <strong>당류 초과 주의</strong>: 한 끼 당류 10g 초과 시 (슈가디톡스 모드)</div>
+          </div>
+        </div>
       </div>
       
       <!-- 전체 초기화 버튼 (개발/테스트용) -->
@@ -578,7 +592,7 @@
 <!-- 4. ✨ Gemini AI 폴백 모듈 (api.js 다음에 위치!) -->
 <script src="gemini.js?v=5"></script>
 <!-- 5. 메인 앱 로직 (위 4개가 준비된 후 실행) -->
-<script src="app.js?v=11"></script>
+<script src="app.js?v=12"></script>
 
 <!-- 5. 사진 업로드 초기화 (DOM 준비 후 실행) -->
 <script>
