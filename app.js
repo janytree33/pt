@@ -844,6 +844,19 @@ function saveCurrentMeal() {
   }
 }
 
+/**
+ * 현재 선택된 식단(또는 조합)을 즐겨찾기에 저장
+ */
+function saveCurrentFavorite() {
+  if (!appState.selectedFood) return;
+  const result = ChloeData.saveFavorite(appState.selectedFood);
+  if (result.success) {
+    showToast('⭐ 즐겨찾기에 추가되었습니다!', 'success');
+  } else {
+    showToast(result.error || '즐겨찾기 저장 실패', 'error');
+  }
+}
+
 // ============================================================
 // 📖 먹기록 탭 초기화 및 렌더링
 // ============================================================
